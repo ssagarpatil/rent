@@ -1,6 +1,8 @@
+
 package com.ss.rentmangment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,16 +19,19 @@ import java.util.List;
 
 public class TenantListFragment extends Fragment {
 
+    private static final String ARG_TYPE = "type";
+
     private RecyclerView recyclerView;
     private TextView tvEmptyMessage;
     private TenantAdapter adapter;
-    private List<Tenant> tenantList = new ArrayList<>();
-    private String tenantType;
+    private String fragmentType; // "students" or "families"
+    private List<Tenant> tenants = new ArrayList<>();
+    private boolean isViewCreated = false;
 
     public static TenantListFragment newInstance(String type) {
         TenantListFragment fragment = new TenantListFragment();
         Bundle args = new Bundle();
-        args.putString("type", type);
+        args.putString(ARG_TYPE, type);
         fragment.setArguments(args);
         return fragment;
     }
@@ -35,52 +40,124 @@ public class TenantListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            tenantType = getArguments().getString("type", "students");
+            fragmentType = getArguments().getString(ARG_TYPE, "students");
         }
+        Log.d("TenantListFragment", "Fragment created for type: " + fragmentType);
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        Log.d("TenantListFragment", "onCreateView called for " + fragmentType);
+
         View view = inflater.inflate(R.layout.fragment_tenant_list, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView = view.findViewById(R.id.recyclerViewTenants);
         tvEmptyMessage = view.findViewById(R.id.tvEmptyMessage);
 
         setupRecyclerView();
-        updateEmptyMessage();
+        isViewCreated = true;
 
+        // If we already have data, update immediately
+        if (!tenants.isEmpty()) {
+            Log.d("TenantListFragment", "onCreateView: Found existing data, updating immediately");
+            updateTenants(tenants);
+        } else {
+            updateEmptyState();
+        }
+
+        Log.d("TenantListFragment", "onCreateView completed for " + fragmentType);
         return view;
     }
 
     private void setupRecyclerView() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new TenantAdapter(getContext(), tenantList);
-        recyclerView.setAdapter(adapter);
-    }
+        if (recyclerView != null) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            adapter = new TenantAdapter(getContext(), tenants);
+            recyclerView.setAdapter(adapter);
 
-    public void updateTenants(List<Tenant> tenants) {
-        tenantList.clear();
-        tenantList.addAll(tenants);
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+            Log.d("TenantListFragment", "RecyclerView setup for " + fragmentType +
+                    " with " + tenants.size() + " initial tenants");
         }
-        updateEmptyMessage();
     }
 
-    private void updateEmptyMessage() {
-        if (tenantList.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            tvEmptyMessage.setVisibility(View.VISIBLE);
+    /**
+     * Update tenants list from parent - THIS IS THE KEY METHOD
+     */
+    public void updateTenants(List<Tenant> newTenants) {
+        Log.d("TenantListFragment", "=== updateTenants called for " + fragmentType + " ===");
+        Log.d("TenantListFragment", "Received " + (newTenants != null ? newTenants.size() : 0) + " tenants");
+        Log.d("TenantListFragment", "isViewCreated: " + isViewCreated);
 
-            if (tenantType.equals("students")) {
-                tvEmptyMessage.setText("📚 No students yet\n\nAdd your first student tenant!");
-            } else {
-                tvEmptyMessage.setText("🏠 No families yet\n\nAdd your first family tenant!");
-            }
+        this.tenants = newTenants != null ? new ArrayList<>(newTenants) : new ArrayList<>();
+
+        // Debug: Log each tenant received
+        for (int i = 0; i < this.tenants.size(); i++) {
+            Tenant tenant = this.tenants.get(i);
+            Log.d("TenantListFragment", fragmentType + " - Tenant " + (i+1) + ": " +
+                    tenant.name + " (Type: " + tenant.tenantType + ")");
+        }
+
+        // Only update adapter if view is created
+        if (isViewCreated && adapter != null) {
+            Log.d("TenantListFragment", "Updating adapter for " + fragmentType);
+            adapter.updateList(this.tenants);
         } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            tvEmptyMessage.setVisibility(View.GONE);
+            Log.w("TenantListFragment", "View not ready for " + fragmentType +
+                    " - isViewCreated: " + isViewCreated + ", adapter: " + (adapter != null));
         }
+
+        updateEmptyState();
+        Log.d("TenantListFragment", "=== updateTenants completed for " + fragmentType + " ===");
+    }
+
+    private void updateEmptyState() {
+        if (!isViewCreated) return;
+
+        boolean isEmpty = tenants.isEmpty();
+
+        Log.d("TenantListFragment", fragmentType + " - isEmpty: " + isEmpty +
+                ", tenants.size(): " + tenants.size());
+
+        if (isEmpty) {
+            if (recyclerView != null) recyclerView.setVisibility(View.GONE);
+            if (tvEmptyMessage != null) {
+                tvEmptyMessage.setVisibility(View.VISIBLE);
+                String emptyMessage = fragmentType.equals("families") ?
+                        "No family tenants found.\nAdd tenants with 'Family' type to see them here." :
+                        "No student tenants found.\nAdd tenants with 'Students' type to see them here.";
+                tvEmptyMessage.setText(emptyMessage);
+            }
+            Log.d("TenantListFragment", "Showing empty message for " + fragmentType);
+        } else {
+            if (recyclerView != null) recyclerView.setVisibility(View.VISIBLE);
+            if (tvEmptyMessage != null) tvEmptyMessage.setVisibility(View.GONE);
+
+            Log.d("TenantListFragment", "Showing recycler view for " + fragmentType +
+                    " with " + tenants.size() + " items");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("TenantListFragment", fragmentType + " fragment resumed with " +
+                tenants.size() + " tenants");
+
+        // Force refresh if we have data
+        if (!tenants.isEmpty() && adapter != null) {
+            Log.d("TenantListFragment", "onResume: Force refreshing adapter for " + fragmentType);
+            adapter.updateList(tenants);
+        }
+
+        updateEmptyState();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        isViewCreated = false;
+        Log.d("TenantListFragment", "onDestroyView called for " + fragmentType);
     }
 }

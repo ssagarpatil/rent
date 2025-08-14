@@ -680,8 +680,12 @@ public class RoomsFragment extends Fragment {
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(spAdapter);
 
+        // Store original room name for editing
+        String originalRoomName = null;
+
         // Pre-fill data for editing
         if (editRoom != null) {
+            originalRoomName = editRoom.getName();
             etName.setText(editRoom.getName());
             for (int i = 0; i < types.length; i++) {
                 if (types[i].equals(editRoom.getType())) {
@@ -705,6 +709,7 @@ public class RoomsFragment extends Fragment {
 
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
+        String finalOriginalRoomName = originalRoomName;
         btnSave.setOnClickListener(v -> {
             // Show progress
             btnSave.setEnabled(false);
@@ -740,30 +745,88 @@ public class RoomsFragment extends Fragment {
                 return;
             }
 
-            try {
-                int capacity = Integer.parseInt(sCapacity);
-                int rent = TextUtils.isEmpty(sRent) ? 0 : Integer.parseInt(sRent);
-                int deposit = TextUtils.isEmpty(sDeposit) ? 0 : Integer.parseInt(sDeposit);
-                int maintenance = TextUtils.isEmpty(sMaintenance) ? 0 : Integer.parseInt(sMaintenance);
+            // Check if room name already exists (only for new rooms or when name is changed)
+            boolean isNameChanged = editRoom == null || !name.equals(finalOriginalRoomName);
 
-                if (capacity <= 0) {
-                    etCapacity.setError("Capacity must be > 0");
-                    btnSave.setEnabled(true);
-                    btnSave.setText("Save");
-                    return;
-                }
+            if (isNameChanged) {
+                roomsRef.child(name).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            etName.setError("Room name already exists");
+                            btnSave.setEnabled(true);
+                            btnSave.setText("Save");
+                            return;
+                        }
+                        // Name is unique, proceed with save
+                        saveRoom(name, type, family, students, sCapacity, sRent, sDeposit,
+                                sMaintenance, notes, editRoom, finalOriginalRoomName, dialog, btnSave);
+                    }
 
-                String allowedFor = family && students ? "Family,Students" :
-                        family ? "Family" : "Students";
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(), "Error checking room name", Toast.LENGTH_SHORT).show();
+                        btnSave.setEnabled(true);
+                        btnSave.setText("Save");
+                    }
+                });
+            } else {
+                // Name not changed, proceed with save
+                saveRoom(name, type, family, students, sCapacity, sRent, sDeposit,
+                        sMaintenance, notes, editRoom, finalOriginalRoomName, dialog, btnSave);
+            }
+        });
 
-                if (editRoom != null) {
-                    // Edit existing room - use existing roomId
-                    String roomKey = editRoom.getRoomId();
-                    RoomModel updated = new RoomModel(roomKey, name, type, allowedFor,
-                            capacity, editRoom.getOccupied(), rent, deposit,
-                            maintenance, notes, System.currentTimeMillis());
+        dialog.show();
+    }
 
-                    roomsRef.child(roomKey).setValue(updated)
+    private void saveRoom(String name, String type, boolean family, boolean students,
+                          String sCapacity, String sRent, String sDeposit, String sMaintenance,
+                          String notes, RoomModel editRoom, String originalRoomName,
+                          AlertDialog dialog, Button btnSave) {
+        try {
+            int capacity = Integer.parseInt(sCapacity);
+            int rent = TextUtils.isEmpty(sRent) ? 0 : Integer.parseInt(sRent);
+            int deposit = TextUtils.isEmpty(sDeposit) ? 0 : Integer.parseInt(sDeposit);
+            int maintenance = TextUtils.isEmpty(sMaintenance) ? 0 : Integer.parseInt(sMaintenance);
+
+            if (capacity <= 0) {
+                Toast.makeText(getContext(), "Capacity must be > 0", Toast.LENGTH_SHORT).show();
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
+                return;
+            }
+
+            String allowedFor = family && students ? "Family,Students" :
+                    family ? "Family" : "Students";
+
+            if (editRoom != null) {
+                // Edit existing room
+                RoomModel updated = new RoomModel(name, name, type, allowedFor,
+                        capacity, editRoom.getOccupied(), rent, deposit,
+                        maintenance, notes, System.currentTimeMillis());
+
+                // If room name changed, we need to delete old entry and create new one
+                if (!name.equals(originalRoomName)) {
+                    // Update all tenants with new room key
+                    updateTenantsRoomKey(originalRoomName, name, () -> {
+                        // Delete old room entry
+                        roomsRef.child(originalRoomName).removeValue();
+                        // Add new room entry
+                        roomsRef.child(name).setValue(updated)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    btnSave.setEnabled(true);
+                                    btnSave.setText("Save");
+                                });
+                    });
+                } else {
+                    // Just update the existing room
+                    roomsRef.child(name).setValue(updated)
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
                                 dialog.dismiss();
@@ -773,39 +836,64 @@ public class RoomsFragment extends Fragment {
                                 btnSave.setEnabled(true);
                                 btnSave.setText("Save");
                             });
-                } else {
-                    // Add new room - generate unique key
-                    String roomKey = roomsRef.push().getKey();
-                    if (roomKey == null) {
-                        Toast.makeText(getContext(), "Failed to generate room ID", Toast.LENGTH_SHORT).show();
-                        btnSave.setEnabled(true);
-                        btnSave.setText("Save");
-                        return;
-                    }
-
-                    RoomModel newRoom = new RoomModel(roomKey, name, type, allowedFor,
-                            capacity, 0, rent, deposit, maintenance, notes,
-                            System.currentTimeMillis());
-
-                    roomsRef.child(roomKey).setValue(newRoom)
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(getContext(), "Room added successfully!", Toast.LENGTH_SHORT).show();
-                                dialog.dismiss();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(getContext(), "Failed to add room: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                btnSave.setEnabled(true);
-                                btnSave.setText("Save");
-                            });
                 }
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Please enter valid numbers", Toast.LENGTH_SHORT).show();
-                btnSave.setEnabled(true);
-                btnSave.setText("Save");
+            } else {
+                // Add new room - use room name as key
+                RoomModel newRoom = new RoomModel(name, name, type, allowedFor,
+                        capacity, 0, rent, deposit, maintenance, notes,
+                        System.currentTimeMillis());
+
+                roomsRef.child(name).setValue(newRoom)
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(getContext(), "Room added successfully!", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(getContext(), "Failed to add room: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            btnSave.setEnabled(true);
+                            btnSave.setText("Save");
+                        });
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+            btnSave.setEnabled(true);
+            btnSave.setText("Save");
+        }
+    }
+
+    private void updateTenantsRoomKey(String oldRoomKey, String newRoomKey, Runnable onComplete) {
+        tenantsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Map<String, Object> updates = new HashMap<>();
+
+                for (DataSnapshot tenantSnapshot : snapshot.getChildren()) {
+                    Tenant tenant = tenantSnapshot.getValue(Tenant.class);
+                    if (tenant != null && oldRoomKey.equals(tenant.assignedRoomKey)) {
+                        // Update tenant's room key
+                        updates.put(tenantSnapshot.getKey() + "/assignedRoomKey", newRoomKey);
+                        updates.put(tenantSnapshot.getKey() + "/assignedRoomName", newRoomKey);
+                    }
+                }
+
+                if (!updates.isEmpty()) {
+                    tenantsRef.updateChildren(updates).addOnCompleteListener(task -> {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    });
+                } else {
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Error updating tenants", Toast.LENGTH_SHORT).show();
             }
         });
-
-        dialog.show();
     }
 
     private void confirmDelete(RoomModel room) {

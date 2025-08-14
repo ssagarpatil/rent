@@ -3,6 +3,7 @@ package com.ss.rentmangment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +38,10 @@ public class TenantsFragment extends Fragment {
     private TenantPagerAdapter pagerAdapter;
     private DatabaseReference usersRef;
     private String adminMobile;
+    private ValueEventListener tenantsListener;
 
     private List<Tenant> allTenants = new ArrayList<>();
+    private boolean isDataLoaded = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -70,6 +73,67 @@ public class TenantsFragment extends Fragment {
         fabAddTenant = view.findViewById(R.id.fabAddTenant);
     }
 
+    /**
+     * Determines if a tenant is a family based on tenantType field
+     */
+    private boolean isTenantFamily(Tenant tenant) {
+        if (tenant == null) return false;
+
+        Log.d("FamilyCheck", "Checking tenant: " + tenant.name + ", tenantType: '" + tenant.tenantType + "'");
+
+        // Primary check: Firebase tenantType field
+        if (tenant.tenantType != null && !tenant.tenantType.trim().isEmpty()) {
+            String type = tenant.tenantType.trim();
+
+            if ("Family".equalsIgnoreCase(type)) {
+                Log.d("FamilyCheck", tenant.name + " is FAMILY (tenantType = " + type + ")");
+                return true;
+            } else if ("Students".equalsIgnoreCase(type) || "Student".equalsIgnoreCase(type)) {
+                Log.d("FamilyCheck", tenant.name + " is STUDENT (tenantType = " + type + ")");
+                return false;
+            }
+        }
+
+        // Fallback logic if tenantType is not set or has different values
+        boolean hasEmergencyContact = tenant.emergencyContactName != null &&
+                !tenant.emergencyContactName.trim().isEmpty();
+        boolean hasHighDeposit = tenant.securityDeposit > 0 && tenant.rentAmount > 0 &&
+                tenant.securityDeposit >= (tenant.rentAmount * 2);
+
+        boolean result = hasEmergencyContact || hasHighDeposit;
+        Log.d("FamilyCheck", tenant.name + " fallback logic result: " + result);
+
+        return result;
+    }
+
+    /**
+     * Get filtered list of students
+     */
+    public List<Tenant> getStudentTenants() {
+        List<Tenant> students = new ArrayList<>();
+        for (Tenant tenant : allTenants) {
+            if (!isTenantFamily(tenant)) {
+                students.add(tenant);
+            }
+        }
+        Log.d("TenantsFragment", "Filtered students: " + students.size());
+        return students;
+    }
+
+    /**
+     * Get filtered list of families
+     */
+    public List<Tenant> getFamilyTenants() {
+        List<Tenant> families = new ArrayList<>();
+        for (Tenant tenant : allTenants) {
+            if (isTenantFamily(tenant)) {
+                families.add(tenant);
+            }
+        }
+        Log.d("TenantsFragment", "Filtered families: " + families.size());
+        return families;
+    }
+
     private void setupViewPager() {
         pagerAdapter = new TenantPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
@@ -88,47 +152,73 @@ public class TenantsFragment extends Fragment {
     }
 
     private void loadTenants() {
-        usersRef.child(adminMobile).child("tenants")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        allTenants.clear();
+        if (adminMobile == null || adminMobile.isEmpty()) {
+            Toast.makeText(getContext(), "Admin mobile not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                        for (DataSnapshot ds : snapshot.getChildren()) {
-                            Tenant tenant = ds.getValue(Tenant.class);
-                            if (tenant != null) {
-                                allTenants.add(tenant);
-                            }
-                        }
+        // Remove existing listener if any
+        if (tenantsListener != null) {
+            usersRef.child(adminMobile).child("tenants").removeEventListener(tenantsListener);
+        }
 
-                        updateUI();
+        tenantsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("TenantsFragment", "=== onDataChange called ===");
+                allTenants.clear();
+
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Tenant tenant = ds.getValue(Tenant.class);
+                    if (tenant != null) {
+                        allTenants.add(tenant);
+                        Log.d("TenantsFragment", "Loaded tenant: " + tenant.name +
+                                " with tenantType: " + tenant.tenantType);
+                    }
+                }
+
+                Log.d("TenantsFragment", "Total tenants loaded: " + allTenants.size());
+                isDataLoaded = true;
+
+                updateUI();
+
+                // Update pager adapter with delay to ensure fragments are ready
+                viewPager.post(() -> {
+                    if (pagerAdapter != null) {
                         pagerAdapter.updateData(allTenants);
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getContext(), "Failed to load tenants", Toast.LENGTH_SHORT).show();
-                    }
                 });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to load tenants: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+                Log.e("TenantsFragment", "Database error: " + error.getMessage());
+            }
+        };
+
+        usersRef.child(adminMobile).child("tenants").addValueEventListener(tenantsListener);
     }
 
     private void updateUI() {
         int studentCount = 0;
         int familyCount = 0;
 
+        // Count using the same logic as filtering
         for (Tenant tenant : allTenants) {
-            if (tenant.tenantType != null) {
-                if (tenant.tenantType.equals("Family")) {
-                    familyCount++;
-                } else if (tenant.tenantType.equals("Students")) {
-                    studentCount++;
-                }
+            if (isTenantFamily(tenant)) {
+                familyCount++;
+            } else {
+                studentCount++;
             }
         }
 
         String totalText = "Total: " + allTenants.size() + " tenants (" +
                 studentCount + " students, " + familyCount + " families)";
         tvTotalCount.setText(totalText);
+
+        Log.d("TenantsFragment", "UI Updated - Students: " + studentCount + ", Families: " + familyCount);
 
         // Update tab titles with counts
         TabLayout.Tab studentTab = tabLayout.getTabAt(0);
@@ -145,6 +235,40 @@ public class TenantsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadTenants();
+        Log.d("TenantsFragment", "=== onResume called ===");
+
+        // If data was already loaded, force update the fragments
+        if (isDataLoaded && pagerAdapter != null && !allTenants.isEmpty()) {
+            Log.d("TenantsFragment", "Data already loaded, forcing fragment updates");
+
+            // Small delay to ensure fragments are ready
+            viewPager.postDelayed(() -> {
+                pagerAdapter.updateData(allTenants);
+                pagerAdapter.forceUpdateAllFragments();
+            }, 100);
+        } else {
+            Log.d("TenantsFragment", "Loading tenants on resume");
+            loadTenants();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("TenantsFragment", "=== onPause called ===");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Clean up listener
+        if (tenantsListener != null && usersRef != null && adminMobile != null) {
+            usersRef.child(adminMobile).child("tenants").removeEventListener(tenantsListener);
+        }
+
+        // Clear adapter cache
+        if (pagerAdapter != null) {
+            pagerAdapter.clearCache();
+        }
     }
 }

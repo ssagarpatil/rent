@@ -97,3 +97,5 @@ public class TenantByRoomAdapter extends RecyclerView.Adapter<TenantByRoomAdapte
         }
     }
 }
+
+

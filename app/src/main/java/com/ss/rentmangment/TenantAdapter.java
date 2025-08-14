@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,66 +16,147 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TenantAdapter extends RecyclerView.Adapter<TenantAdapter.TenantViewHolder> {
 
     private Context context;
-    private List<Tenant> tenantList;
+    private List<Tenant> tenantsList; // The list we'll display
     private String adminMobile;
 
     public TenantAdapter(Context context, List<Tenant> tenantList) {
         this.context = context;
-        this.tenantList = tenantList;
+        this.tenantsList = tenantList != null ? new ArrayList<>(tenantList) : new ArrayList<>();
 
-        // Get admin mobile from SharedPreferences
-        SharedPreferences sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        this.adminMobile = sharedPreferences.getString("mobile", "");
+        if (context != null) {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            this.adminMobile = sharedPreferences.getString("mobile", "");
+        }
+
+        Log.d("TenantAdapter", "Created with " + this.tenantsList.size() + " tenants");
     }
 
     @NonNull
     @Override
     public TenantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new TenantViewHolder(LayoutInflater.from(context).inflate(R.layout.item_tenant, parent, false));
+        View view = LayoutInflater.from(context).inflate(R.layout.item_tenant, parent, false);
+        return new TenantViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TenantViewHolder holder, int position) {
-        Tenant tenant = tenantList.get(position);
-        holder.tvName.setText(tenant.name);
-
-        // Show assigned room name if available, otherwise show roomNumber
-        String roomText = "Room: ";
-        if (tenant.assignedRoomName != null && !tenant.assignedRoomName.isEmpty()) {
-            roomText += tenant.assignedRoomName;
-        } else if (tenant.roomNumber != null && !tenant.roomNumber.isEmpty()) {
-            roomText += tenant.roomNumber;
-        } else {
-            roomText += "Not Assigned";
+        if (position >= tenantsList.size()) {
+            Log.e("TenantAdapter", "Position " + position + " is out of bounds for list size " + tenantsList.size());
+            return;
         }
-        holder.tvRoom.setText(roomText);
 
-        holder.tvPhone.setText(tenant.mobile);
+        Tenant tenant = tenantsList.get(position);
+        Log.d("TenantAdapter", "Binding tenant: " + tenant.name + " at position " + position);
 
-
-
-        // Set click listener for item
-        holder.itemView.setOnClickListener(v -> showOptionsMenu(v, tenant, position));
-
-        // Long click for options
-        holder.itemView.setOnLongClickListener(v -> {
-            showOptionsMenu(v, tenant, position);
-            return true;
-        });
+        holder.bind(tenant, position);
     }
 
+    @Override
+    public int getItemCount() {
+        Log.d("TenantAdapter", "getItemCount called: " + tenantsList.size());
+        return tenantsList.size();
+    }
+
+    /**
+     * Update the list with new data
+     */
+    public void updateList(List<Tenant> newList) {
+        Log.d("TenantAdapter", "updateList called with " + (newList != null ? newList.size() : 0) + " tenants");
+
+        this.tenantsList = newList != null ? new ArrayList<>(newList) : new ArrayList<>();
+
+        // Log each tenant being added
+        for (int i = 0; i < tenantsList.size(); i++) {
+            Tenant tenant = tenantsList.get(i);
+            Log.d("TenantAdapter", "Tenant " + (i+1) + ": " + tenant.name +
+                    " (Type: " + tenant.tenantType + ")");
+        }
+
+        notifyDataSetChanged();
+        Log.d("TenantAdapter", "notifyDataSetChanged called. Final count: " + tenantsList.size());
+    }
+
+    /**
+     * Determines if a tenant is a family
+     */
+    private boolean isTenantFamily(Tenant tenant) {
+        if (tenant == null) return false;
+
+        if (tenant.tenantType != null && !tenant.tenantType.trim().isEmpty()) {
+            String type = tenant.tenantType.trim();
+            return "Family".equalsIgnoreCase(type);
+        }
+
+        // Fallback logic
+        boolean hasEmergencyContact = tenant.emergencyContactName != null &&
+                !tenant.emergencyContactName.trim().isEmpty();
+        boolean hasHighDeposit = tenant.securityDeposit > 0 && tenant.rentAmount > 0 &&
+                tenant.securityDeposit >= (tenant.rentAmount * 2);
+
+        return hasEmergencyContact || hasHighDeposit;
+    }
+
+    /**
+     * ViewHolder class
+     */
+    public class TenantViewHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvRoom, tvPhone;
+        ImageView ivPhoto;
+
+        TenantViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvName = itemView.findViewById(R.id.tvTenantName);
+            tvRoom = itemView.findViewById(R.id.tvTenantRoom);
+            tvPhone = itemView.findViewById(R.id.tvTenantPhone);
+            ivPhoto = itemView.findViewById(R.id.ivTenantPhoto);
+        }
+
+        public void bind(Tenant tenant, int position) {
+            // Set tenant name
+            tvName.setText(tenant.name != null ? tenant.name : "Unknown");
+
+            // Build room text
+            String roomText = "Room: ";
+            if (tenant.assignedRoomName != null && !tenant.assignedRoomName.isEmpty()) {
+                roomText += tenant.assignedRoomName;
+            } else if (tenant.roomNumber != null && !tenant.roomNumber.isEmpty()) {
+                roomText += tenant.roomNumber;
+            } else {
+                roomText += "Not Assigned";
+            }
+
+            // Determine tenant type and add indicator
+            boolean isFamily = isTenantFamily(tenant);
+            if (isFamily) {
+                roomText += " (🏠 Family)";
+                ivPhoto.setBackgroundColor(context.getResources().getColor(android.R.color.holo_orange_light));
+            } else {
+                roomText += " (🎓 Student)";
+                ivPhoto.setBackgroundColor(context.getResources().getColor(android.R.color.holo_blue_light));
+            }
+
+            tvRoom.setText(roomText);
+            tvPhone.setText(tenant.mobile != null ? tenant.mobile : "No mobile");
+
+            // Set click listeners
+            itemView.setOnClickListener(v -> showOptionsMenu(v, tenant, position));
+            itemView.setOnLongClickListener(v -> {
+                showOptionsMenu(v, tenant, position);
+                return true;
+            });
+        }
+    }
+
+    // Rest of the methods (showOptionsMenu, editTenant, deleteTenant, etc.)
     private void showOptionsMenu(View view, Tenant tenant, int position) {
         PopupMenu popupMenu = new PopupMenu(context, view);
         popupMenu.getMenu().add(0, 1, 0, "Edit");
@@ -92,7 +174,6 @@ public class TenantAdapter extends RecyclerView.Adapter<TenantAdapter.TenantView
                     return false;
             }
         });
-
         popupMenu.show();
     }
 
@@ -104,24 +185,26 @@ public class TenantAdapter extends RecyclerView.Adapter<TenantAdapter.TenantView
     }
 
     private void deleteTenant(Tenant tenant, int position) {
+        String tenantTypeDisplay = isTenantFamily(tenant) ? "🏠 Family" : "🎓 Student";
+
         new AlertDialog.Builder(context)
                 .setTitle("Delete Tenant")
                 .setMessage("Are you sure you want to delete this tenant?\n\n" +
                         "Name: " + tenant.name + "\n" +
                         "Mobile: " + tenant.mobile + "\n" +
-                        "Room: " + (tenant.assignedRoomName != null ? tenant.assignedRoomName : "Not Assigned") +
-                        "\n\nThis will automatically free up space in the assigned room.\n" +
-                        "This action cannot be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    performDelete(tenant, position);
-                })
+                        "Type: " + tenantTypeDisplay + "\n" +
+                        "Room: " + (tenant.assignedRoomName != null ? tenant.assignedRoomName : "Not Assigned"))
+                .setPositiveButton("Delete", (dialog, which) -> performDelete(tenant, position))
                 .setNegativeButton("Cancel", null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
     private void performDelete(Tenant tenant, int position) {
-        // Show progress dialog
+        if (adminMobile == null || adminMobile.isEmpty()) {
+            Toast.makeText(context, "Error: Admin mobile not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AlertDialog progressDialog = new AlertDialog.Builder(context)
                 .setTitle("Deleting Tenant")
                 .setMessage("Please wait...")
@@ -138,43 +221,13 @@ public class TenantAdapter extends RecyclerView.Adapter<TenantAdapter.TenantView
         tenantRef.removeValue().addOnCompleteListener(task -> {
             progressDialog.dismiss();
             if (task.isSuccessful()) {
-                // Note: Room occupancy will be automatically updated by RoomsFragment listener
-                // No need to manually update room occupancy here
-
-                // Remove from list and update adapter
-                tenantList.remove(position);
+                tenantsList.remove(position);
                 notifyItemRemoved(position);
-                notifyItemRangeChanged(position, tenantList.size());
-
-                Toast.makeText(context, "Tenant deleted successfully. Room occupancy updated automatically.", Toast.LENGTH_SHORT).show();
+                notifyItemRangeChanged(position, tenantsList.size());
+                Toast.makeText(context, "Tenant deleted successfully", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(context, "Error deleting tenant: " +
-                                (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error deleting tenant", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return tenantList.size();
-    }
-
-    public void updateList(List<Tenant> newList) {
-        this.tenantList = newList;
-        notifyDataSetChanged();
-    }
-
-    static class TenantViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvRoom, tvPhone;
-        ImageView ivPhoto;
-
-        TenantViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvName = itemView.findViewById(R.id.tvTenantName);
-            tvRoom = itemView.findViewById(R.id.tvTenantRoom);
-            tvPhone = itemView.findViewById(R.id.tvTenantPhone);
-            ivPhoto = itemView.findViewById(R.id.ivTenantPhoto);
-        }
     }
 }
