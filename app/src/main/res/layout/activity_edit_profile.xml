@@ -8,35 +8,60 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#4CAF50"
+        android:background="@drawable/nav_header_gradient"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/nav_header_gradient"
+        android:padding="20dp">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_arrow_back_white"
+        android:layout_alignParentStart="true"
+        android:contentDescription="Back"
+        android:clickable="true"
+        android:focusable="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/ivBack"
+            android:layout_marginStart="16dp"
+            android:text="Edit Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white" />
+
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Edit Profile"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#333"
-                android:gravity="center"
-                android:layout_marginBottom="24dp" />
+            android:padding="24dp"
+            android:paddingBottom="32dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etName"
@@ -50,7 +75,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etEmail"
@@ -64,7 +90,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etBusinessName"
@@ -78,7 +105,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAddress"
@@ -93,7 +121,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etBirthDate"
@@ -121,7 +150,8 @@
                 android:layout_height="120dp"
                 android:layout_marginBottom="8dp"
                 app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <ImageView
                     android:id="@+id/ivSignaturePreview"
@@ -139,16 +169,18 @@
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
                 android:text="Update Signature"
-                android:backgroundTint="#2196F3"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#3F51B5"
                 style="@style/Widget.MaterialComponents.Button" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveChanges"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="match_parent"
                 android:text="Save Changes"
                 android:textSize="16sp"
-                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#3F51B5"
                 style="@style/Widget.MaterialComponents.Button" />
 
         </LinearLayout>

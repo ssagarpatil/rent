@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Add these styles to your res/values/styles.xml -->
+
+    <!-- Add this to your res/values/styles.xml -->
+
+    <style name="CompactTabTextStyle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="SearchViewTheme">
+        <item name="android:textColorHint">#9E9E9E</item>
+        <item name="android:textColor">#212121</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+</resources>

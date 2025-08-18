@@ -244,8 +244,6 @@ public class SettingsFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setView(dialogView);
-        builder.setTitle("Change PIN");
-
         AlertDialog dialog = builder.create();
 
         // Get dialog views
@@ -367,14 +365,14 @@ public class SettingsFragment extends Fragment {
     }
 
     private void updatePinInDatabase(String currentPin, String newPin, AlertDialog dialog) {
-        // First verify current PIN
-        usersRef.child(userMobile).child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
+        // First verify current PIN - check in the "info" node
+        usersRef.child(userMobile).child("info").child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String storedPin = dataSnapshot.getValue(String.class);
                 if (storedPin != null && storedPin.equals(currentPin)) {
-                    // Current PIN is correct, update to new PIN
-                    usersRef.child(userMobile).child("pin").setValue(newPin)
+                    // Current PIN is correct, update to new PIN in the "info" node
+                    usersRef.child(userMobile).child("info").child("pin").setValue(newPin)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
                                     Toast.makeText(getContext(), "PIN updated successfully", Toast.LENGTH_SHORT).show();
@@ -384,7 +382,33 @@ public class SettingsFragment extends Fragment {
                                 }
                             });
                 } else {
-                    Toast.makeText(getContext(), "Current PIN is incorrect", Toast.LENGTH_SHORT).show();
+                    // If not found in info node, try checking directly under user node (fallback)
+                    usersRef.child(userMobile).child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot fallbackSnapshot) {
+                            String fallbackPin = fallbackSnapshot.getValue(String.class);
+                            if (fallbackPin != null && fallbackPin.equals(currentPin)) {
+                                // Update PIN in both locations for consistency
+                                usersRef.child(userMobile).child("pin").setValue(newPin);
+                                usersRef.child(userMobile).child("info").child("pin").setValue(newPin)
+                                        .addOnCompleteListener(task -> {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(getContext(), "PIN updated successfully", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
+                                            } else {
+                                                Toast.makeText(getContext(), "Failed to update PIN", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            } else {
+                                Toast.makeText(getContext(), "Current PIN is incorrect", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Toast.makeText(getContext(), "Error verifying PIN", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
 

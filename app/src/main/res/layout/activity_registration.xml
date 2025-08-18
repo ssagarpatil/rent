@@ -1,33 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#f5f5f5">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/nav_header_gradient"
+        android:padding="20dp">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text=" Create Account "
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white" />
+    </RelativeLayout>
+
+
+
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Create Account"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#333"
-            android:layout_gravity="center"
-            android:layout_marginBottom="32dp" />
+
 
         <!-- Name Field -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
@@ -42,8 +55,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etMobile"
@@ -59,8 +72,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmail"
@@ -75,8 +88,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50"
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B"
             app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -93,8 +106,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etBusinessName"
@@ -109,8 +122,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAddress"
@@ -126,8 +139,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxStrokeColor="#4CAF50"
-            app:hintTextColor="#4CAF50">
+            app:boxStrokeColor="#3F51B5"
+            app:hintTextColor="#0B0B0B">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etBirthDate"
@@ -178,10 +191,10 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddSignature"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:text="Draw Signature"
                 android:textSize="14sp"
-                android:backgroundTint="#2196F3"
+                android:backgroundTint="#3F51B5"
                 app:cornerRadius="6dp"
                 app:icon="@drawable/ic_edit"
                 app:iconGravity="textStart" />
@@ -193,10 +206,10 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:text="Register"
             android:textSize="16sp"
-            android:backgroundTint="#4CAF50"
+            android:backgroundTint="#3F51B5"
             app:cornerRadius="8dp"
             android:layout_marginBottom="16dp" />
 
@@ -206,7 +219,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Already have an account? Login"
-            android:textColor="#4CAF50"
+            android:textColor="#0D0D0D"
             android:textSize="14sp"
             android:layout_gravity="center"
             android:clickable="true"
@@ -214,3 +227,4 @@
 
     </LinearLayout>
 </ScrollView>
+</LinearLayout>

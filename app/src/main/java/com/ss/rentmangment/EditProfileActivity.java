@@ -29,7 +29,7 @@ import java.util.Map;
 public class EditProfileActivity extends AppCompatActivity {
 
     private TextInputEditText etName, etEmail, etBusinessName, etAddress, etBirthDate;
-    private ImageView ivSignaturePreview;
+    private ImageView ivSignaturePreview, ivBack;
     private MaterialButton btnSaveChanges, btnUpdateSignature;
 
     private FirebaseDatabase database;
@@ -46,14 +46,21 @@ public class EditProfileActivity extends AppCompatActivity {
 
         initializeViews();
         setupToolbar();
+        setupBackButton();
 
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference("users");
 
+        // Get data from intent
         userMobile = getIntent().getStringExtra("userMobile");
+
+        // Pre-populate fields with data passed from SettingsFragment
+        populateFieldsFromIntent();
 
         setupDatePicker();
         setupClickListeners();
+
+        // Also load current user data from Firebase as backup
         loadCurrentUserData();
     }
 
@@ -64,6 +71,7 @@ public class EditProfileActivity extends AppCompatActivity {
         etAddress = findViewById(R.id.etAddress);
         etBirthDate = findViewById(R.id.etBirthDate);
         ivSignaturePreview = findViewById(R.id.ivSignaturePreview);
+        ivBack = findViewById(R.id.ivBack);
         btnSaveChanges = findViewById(R.id.btnSaveChanges);
         btnUpdateSignature = findViewById(R.id.btnUpdateSignature);
     }
@@ -74,6 +82,45 @@ public class EditProfileActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Edit Profile");
+        }
+    }
+
+    private void setupBackButton() {
+        ivBack.setOnClickListener(v -> {
+            // Simply finish the activity to go back to previous screen
+            finish();
+        });
+    }
+
+    // NEW METHOD: Pre-populate fields with data from intent
+    private void populateFieldsFromIntent() {
+        String userName = getIntent().getStringExtra("userName");
+        String email = getIntent().getStringExtra("email");
+        String businessName = getIntent().getStringExtra("businessName");
+        String address = getIntent().getStringExtra("address");
+        String birthDate = getIntent().getStringExtra("birthDate");
+        digitalSignatureBase64 = getIntent().getStringExtra("digitalSignature");
+
+        // Set the fields if data is available
+        if (userName != null && !userName.isEmpty()) {
+            etName.setText(userName);
+        }
+        if (email != null && !email.isEmpty()) {
+            etEmail.setText(email);
+        }
+        if (businessName != null && !businessName.isEmpty()) {
+            etBusinessName.setText(businessName);
+        }
+        if (address != null && !address.isEmpty()) {
+            etAddress.setText(address);
+        }
+        if (birthDate != null && !birthDate.isEmpty()) {
+            etBirthDate.setText(birthDate);
+        }
+
+        // Display signature if available
+        if (digitalSignatureBase64 != null && !digitalSignatureBase64.isEmpty()) {
+            displaySignature(digitalSignatureBase64);
         }
     }
 
@@ -105,8 +152,15 @@ public class EditProfileActivity extends AppCompatActivity {
         });
     }
 
+    // UPDATED METHOD: Load data from correct Firebase path (info node)
     private void loadCurrentUserData() {
-        usersRef.child(userMobile).addListenerForSingleValueEvent(new ValueEventListener() {
+        if (userMobile == null || userMobile.isEmpty()) {
+            Toast.makeText(this, "User mobile not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Load data from the "info" node under the user's mobile number
+        usersRef.child(userMobile).child("info").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -116,23 +170,38 @@ public class EditProfileActivity extends AppCompatActivity {
                     String businessName = dataSnapshot.child("businessName").getValue(String.class);
                     String address = dataSnapshot.child("address").getValue(String.class);
                     String birthDate = dataSnapshot.child("birthDate").getValue(String.class);
-                    digitalSignatureBase64 = dataSnapshot.child("digitalSignature").getValue(String.class);
+                    String signature = dataSnapshot.child("digitalSignature").getValue(String.class);
 
-                    // Populate form fields
-                    etName.setText(name);
-                    etEmail.setText(email);
-                    etBusinessName.setText(businessName);
-                    etAddress.setText(address);
-                    etBirthDate.setText(birthDate);
+                    // Only populate fields if they are currently empty (to avoid overwriting intent data)
+                    if (etName.getText().toString().trim().isEmpty() && name != null) {
+                        etName.setText(name);
+                    }
+                    if (etEmail.getText().toString().trim().isEmpty() && email != null) {
+                        etEmail.setText(email);
+                    }
+                    if (etBusinessName.getText().toString().trim().isEmpty() && businessName != null) {
+                        etBusinessName.setText(businessName);
+                    }
+                    if (etAddress.getText().toString().trim().isEmpty() && address != null) {
+                        etAddress.setText(address);
+                    }
+                    if (etBirthDate.getText().toString().trim().isEmpty() && birthDate != null) {
+                        etBirthDate.setText(birthDate);
+                    }
 
-                    // Display current signature
-                    displaySignature(digitalSignatureBase64);
+                    // Update signature if not already set
+                    if ((digitalSignatureBase64 == null || digitalSignatureBase64.isEmpty()) && signature != null) {
+                        digitalSignatureBase64 = signature;
+                        displaySignature(digitalSignatureBase64);
+                    }
+                } else {
+                    Toast.makeText(EditProfileActivity.this, "User data not found in database", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(EditProfileActivity.this, "Error loading data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditProfileActivity.this, "Error loading data: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -142,9 +211,14 @@ public class EditProfileActivity extends AppCompatActivity {
             try {
                 byte[] decodedString = Base64.decode(signatureBase64, Base64.DEFAULT);
                 Bitmap signatureBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                ivSignaturePreview.setImageBitmap(signatureBitmap);
+                if (signatureBitmap != null) {
+                    ivSignaturePreview.setImageBitmap(signatureBitmap);
+                } else {
+                    ivSignaturePreview.setImageResource(R.drawable.ic_signature_placeholder);
+                }
             } catch (Exception e) {
                 ivSignaturePreview.setImageResource(R.drawable.ic_signature_placeholder);
+                Toast.makeText(this, "Error loading signature", Toast.LENGTH_SHORT).show();
             }
         } else {
             ivSignaturePreview.setImageResource(R.drawable.ic_signature_placeholder);
@@ -160,12 +234,15 @@ public class EditProfileActivity extends AppCompatActivity {
 
             if (digitalSignatureBase64 != null && !digitalSignatureBase64.isEmpty()) {
                 // Convert base64 back to bitmap for preview
-                byte[] decodedString = Base64.decode(digitalSignatureBase64, Base64.DEFAULT);
-                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                ivSignaturePreview.setImageBitmap(decodedBitmap);
-                btnUpdateSignature.setText("Update Signature");
-
-                Toast.makeText(this, "Signature updated", Toast.LENGTH_SHORT).show();
+                try {
+                    byte[] decodedString = Base64.decode(digitalSignatureBase64, Base64.DEFAULT);
+                    Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    ivSignaturePreview.setImageBitmap(decodedBitmap);
+                    btnUpdateSignature.setText("Update Signature");
+                    Toast.makeText(this, "Signature updated", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(this, "Error processing signature", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
@@ -211,6 +288,7 @@ public class EditProfileActivity extends AppCompatActivity {
         return true;
     }
 
+    // UPDATED METHOD: Save data to the correct Firebase path (info node)
     private void updateUserProfile(String name, String email, String businessName, String address, String birthDate) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
@@ -219,14 +297,15 @@ public class EditProfileActivity extends AppCompatActivity {
         updates.put("address", address);
         updates.put("birthDate", birthDate);
 
-        // Only update signature if it was changed
-        if (!digitalSignatureBase64.isEmpty()) {
+        // Only update signature if it was changed or exists
+        if (digitalSignatureBase64 != null && !digitalSignatureBase64.isEmpty()) {
             updates.put("digitalSignature", digitalSignatureBase64);
         }
 
         updates.put("lastModified", System.currentTimeMillis());
 
-        usersRef.child(userMobile).updateChildren(updates)
+        // Update data in the "info" node ONLY
+        usersRef.child(userMobile).child("info").updateChildren(updates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show();

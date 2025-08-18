@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class TenantsFragment extends Fragment {
     private TabLayout tabLayout;
     private FloatingActionButton fabAddTenant;
     private TextView tvTotalCount;
+    private SearchView searchView;
 
     private TenantPagerAdapter pagerAdapter;
     private DatabaseReference usersRef;
@@ -41,6 +43,7 @@ public class TenantsFragment extends Fragment {
     private ValueEventListener tenantsListener;
 
     private List<Tenant> allTenants = new ArrayList<>();
+    private List<Tenant> filteredTenants = new ArrayList<>();
     private boolean isDataLoaded = false;
 
     @Override
@@ -62,7 +65,9 @@ public class TenantsFragment extends Fragment {
                 startActivity(new Intent(getContext(), AddTenantActivity.class))
         );
 
+        setupSearchView();
         loadTenants();
+
         return view;
     }
 
@@ -71,6 +76,7 @@ public class TenantsFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tabLayout);
         viewPager = view.findViewById(R.id.viewPager);
         fabAddTenant = view.findViewById(R.id.fabAddTenant);
+        searchView = view.findViewById(R.id.searchView);
     }
 
     /**
@@ -111,7 +117,7 @@ public class TenantsFragment extends Fragment {
      */
     public List<Tenant> getStudentTenants() {
         List<Tenant> students = new ArrayList<>();
-        for (Tenant tenant : allTenants) {
+        for (Tenant tenant : filteredTenants) {
             if (!isTenantFamily(tenant)) {
                 students.add(tenant);
             }
@@ -125,7 +131,7 @@ public class TenantsFragment extends Fragment {
      */
     public List<Tenant> getFamilyTenants() {
         List<Tenant> families = new ArrayList<>();
-        for (Tenant tenant : allTenants) {
+        for (Tenant tenant : filteredTenants) {
             if (isTenantFamily(tenant)) {
                 families.add(tenant);
             }
@@ -176,6 +182,7 @@ public class TenantsFragment extends Fragment {
                                 " with tenantType: " + tenant.tenantType);
                     }
                 }
+                filteredTenants = new ArrayList<>(allTenants); // Initialize filtered list
 
                 Log.d("TenantsFragment", "Total tenants loaded: " + allTenants.size());
                 isDataLoaded = true;
@@ -185,7 +192,7 @@ public class TenantsFragment extends Fragment {
                 // Update pager adapter with delay to ensure fragments are ready
                 viewPager.post(() -> {
                     if (pagerAdapter != null) {
-                        pagerAdapter.updateData(allTenants);
+                        pagerAdapter.updateData(filteredTenants);
                     }
                 });
             }
@@ -201,12 +208,70 @@ public class TenantsFragment extends Fragment {
         usersRef.child(adminMobile).child("tenants").addValueEventListener(tenantsListener);
     }
 
+    private void setupSearchView() {
+        if (searchView != null) {
+            searchView.setQueryHint("Search by name,mobile,room number");
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    filterTenants(query);
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    filterTenants(newText);
+                    return false;
+                }
+            });
+
+            // Clear search when X is clicked
+            searchView.setOnCloseListener(() -> {
+                filterTenants("");
+                return false;
+            });
+        }
+    }
+
+    private void filterTenants(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            filteredTenants = new ArrayList<>(allTenants);
+        } else {
+            List<Tenant> filteredList = new ArrayList<>();
+            String lowerQuery = query.toLowerCase().trim();
+
+            for (Tenant tenant : allTenants) {
+                boolean matchesName = tenant.name != null &&
+                        tenant.name.toLowerCase().contains(lowerQuery);
+
+                boolean matchesMobile = tenant.mobile != null &&
+                        tenant.mobile.toLowerCase().contains(lowerQuery);
+
+                boolean matchesRoom = tenant.roomNumber != null &&
+                        tenant.roomNumber.toLowerCase().contains(lowerQuery);
+
+                if (matchesName || matchesMobile || matchesRoom) {
+                    filteredList.add(tenant);
+                }
+            }
+            filteredTenants = filteredList;
+        }
+
+        updateUI();
+
+        // Update adapter with filtered data
+        if (pagerAdapter != null) {
+            pagerAdapter.updateData(filteredTenants);
+            pagerAdapter.forceUpdateAllFragments();
+        }
+    }
+
     private void updateUI() {
         int studentCount = 0;
         int familyCount = 0;
 
         // Count using the same logic as filtering
-        for (Tenant tenant : allTenants) {
+        for (Tenant tenant : filteredTenants) {
             if (isTenantFamily(tenant)) {
                 familyCount++;
             } else {
@@ -214,7 +279,7 @@ public class TenantsFragment extends Fragment {
             }
         }
 
-        String totalText = "Total: " + allTenants.size() + " tenants (" +
+        String totalText = "Total: " + filteredTenants.size() + " tenants (" +
                 studentCount + " students, " + familyCount + " families)";
         tvTotalCount.setText(totalText);
 
@@ -243,7 +308,7 @@ public class TenantsFragment extends Fragment {
 
             // Small delay to ensure fragments are ready
             viewPager.postDelayed(() -> {
-                pagerAdapter.updateData(allTenants);
+                pagerAdapter.updateData(filteredTenants);
                 pagerAdapter.forceUpdateAllFragments();
             }, 100);
         } else {

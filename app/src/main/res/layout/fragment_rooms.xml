@@ -3,23 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/nav_header_gradient"
+    android:padding="20dp">
     <!-- Title -->
     <TextView
         android:id="@+id/tv_rooms_title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:text="Rooms"
-        android:textSize="20sp"
-        android:padding="16dp"
-        android:textStyle="bold" />
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"  />
 
+</RelativeLayout>
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRooms"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="100dp"
+
         android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

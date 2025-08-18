@@ -13,7 +13,7 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginBottom="32dp"
-        app:tint="#4CAF50" />
+        app:tint="#2196F3" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -36,8 +36,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:boxStrokeColor="#4CAF50"
-        app:hintTextColor="#4CAF50">
+        app:boxStrokeColor="#3F51B5"
+        app:hintTextColor="#0B0B0B">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etMobileLogin"
@@ -52,8 +52,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        app:boxStrokeColor="#4CAF50"
-        app:hintTextColor="#4CAF50"
+        app:boxStrokeColor="#3F51B5"
+        app:hintTextColor="#0B0B0B"
         app:passwordToggleEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -71,7 +71,7 @@
         android:layout_height="60dp"
         android:text="Login"
         android:textSize="16sp"
-        android:backgroundTint="#4CAF50"
+        android:backgroundTint="#3F51B5"
         app:cornerRadius="8dp"
         android:layout_marginBottom="16dp" />
 
@@ -80,7 +80,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Don't have an account? Register"
-        android:textColor="#4CAF50"
+        android:textColor="#090909"
         android:textSize="14sp"
         android:clickable="true"
         android:focusable="true" />

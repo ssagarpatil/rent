@@ -1,72 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Header Section -->
-
+        <!-- Compact Header Section -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/nav_header_gradient"
+            android:elevation="4dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="12dp"
+            android:paddingHorizontal="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/nav_header_gradient">
+                android:layout_centerInParent="true">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=" All Tenants"
-                    android:textSize="24sp"
+                    android:text="All Tenants"
+                    android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:gravity="center"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@android:color/white"
+                    android:gravity="center" />
 
                 <TextView
                     android:id="@+id/tvTotalCount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Total: 0 tenants"
-                    android:textSize="14sp"
-                    android:textColor="@color/white"
-                    android:gravity="center" />
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#E3F2FD"
+                    android:gravity="center"
+                    android:alpha="0.9" />
 
             </LinearLayout>
 
+        </RelativeLayout>
 
-        <!-- Tab Layout -->
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
+        <!-- Compact Search Section -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="8dp"
-            app:tabMode="fixed"
-            android:layout_margin="10dp"
-            app:tabGravity="fill"
-            app:tabSelectedTextColor="@color/black"
-            app:tabTextColor="@android:color/darker_gray"
-            app:tabIndicatorColor="@color/black"
-            app:tabIndicatorHeight="3dp"
-            app:tabBackground="@drawable/room_header_background"
-            app:tabRippleColor="@color/black" />
+            android:layout_margin="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#FFFFFF">
 
-        <!-- ViewPager2 for Swipeable Content -->
+            <SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:iconifiedByDefault="false"
+                android:queryHint="Search by name, mobile, or room..."
+                android:background="@drawable/simple_line_background"
+                android:layout_margin="2dp"
+                android:theme="@style/SearchViewTheme" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Compact Tab Layout -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_margin="2dp"
+                app:tabMode="fixed"
+                app:tabGravity="fill"
+                app:tabSelectedTextColor="#1976D2"
+                app:tabTextColor="#757575"
+                app:tabIndicatorColor="#1976D2"
+                app:tabIndicatorHeight="3dp"
+                app:tabRippleColor="#E3F2FD"
+                android:background="@drawable/simple_line_background"
+                />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Maximized ViewPager2 for Content (RecyclerView) -->
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewPager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_margin="10dp"
             android:layout_weight="1"
-            android:layout_marginTop="10dp"
-            android:layout_marginHorizontal="8dp" />
+            android:layout_marginHorizontal="4dp"
+            android:layout_marginBottom="4dp" />
 
     </LinearLayout>
 
@@ -78,7 +119,12 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/ic_edit"
+        android:contentDescription="Add new tenant"
         app:tint="@android:color/white"
-        app:backgroundTint="@color/black" />
+        app:backgroundTint="#1976D2"
+        app:elevation="6dp"
+        app:pressedTranslationZ="8dp"
+        app:borderWidth="0dp"
+        app:rippleColor="#BBDEFB" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

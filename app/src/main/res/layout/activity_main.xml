@@ -11,9 +11,9 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#4CAF50"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Dashboard"
+        android:background="@drawable/nav_header_gradient"
         app:titleTextColor="@android:color/white" />
 
     <ScrollView
@@ -203,7 +203,7 @@
                         android:layout_height="50dp"
                         android:text="Logout"
                         android:textColor="@android:color/white"
-                        android:backgroundTint="#F44336"
+                        android:backgroundTint="#3F51B5"
                         app:cornerRadius="6dp" />
 
                 </LinearLayout>
