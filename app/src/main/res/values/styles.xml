@@ -9,11 +9,6 @@
         <item name="android:layout_marginBottom">6dp</item>
     </style>
 
-    <style name="SearchViewTheme" parent="Widget.AppCompat.SearchView">
-        <!-- Customize as needed -->
-        <item name="android:background">?attr/colorOnBackground</item>
-        <item name="android:textColor">?attr/colorOnBackground</item>
-    </style>
 
 
     <style name="FormEditText">

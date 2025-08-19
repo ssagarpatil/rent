@@ -7,7 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;  // ← CHANGED THIS LINE
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +35,7 @@ public class TenantsFragment extends Fragment {
     private TabLayout tabLayout;
     private FloatingActionButton fabAddTenant;
     private TextView tvTotalCount;
-    private SearchView searchView;
+    private SearchView searchView;  // This will now be androidx.appcompat.widget.SearchView
 
     private TenantPagerAdapter pagerAdapter;
     private DatabaseReference usersRef;
@@ -76,12 +76,10 @@ public class TenantsFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tabLayout);
         viewPager = view.findViewById(R.id.viewPager);
         fabAddTenant = view.findViewById(R.id.fabAddTenant);
-        searchView = view.findViewById(R.id.searchView);
+        searchView = view.findViewById(R.id.searchView);  // Now correctly casts to androidx SearchView
     }
 
-    /**
-     * Determines if a tenant is a family based on tenantType field
-     */
+    /** Determines if a tenant is a family based on tenantType field */
     private boolean isTenantFamily(Tenant tenant) {
         if (tenant == null) return false;
 
@@ -112,9 +110,7 @@ public class TenantsFragment extends Fragment {
         return result;
     }
 
-    /**
-     * Get filtered list of students
-     */
+    /** Get filtered list of students */
     public List<Tenant> getStudentTenants() {
         List<Tenant> students = new ArrayList<>();
         for (Tenant tenant : filteredTenants) {
@@ -126,9 +122,7 @@ public class TenantsFragment extends Fragment {
         return students;
     }
 
-    /**
-     * Get filtered list of families
-     */
+    /** Get filtered list of families */
     public List<Tenant> getFamilyTenants() {
         List<Tenant> families = new ArrayList<>();
         for (Tenant tenant : filteredTenants) {
