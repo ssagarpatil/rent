@@ -18,6 +18,7 @@ public class Tenant {
     public String idProofType;
     public String idProofNumber;
     public String notes;
+    public String joiningDate;
     public String tenantType; // "Family" or "Students"
 
     // Default constructor for Firebase
