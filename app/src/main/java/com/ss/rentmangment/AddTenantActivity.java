@@ -744,6 +744,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -982,21 +983,12 @@ public class AddTenantActivity extends AppCompatActivity {
     }
 
     private void updateButtonText() {
-        String buttonText;
-        if (tenantType.equals("Family")) {
-            buttonText = "Select Room (" + availableRooms.size() + " available for family)";
-        } else {
-            buttonText = "Select Room (" + availableRooms.size() + " available for students)";
-        }
+        String buttonText = "Select Room (" + availableRooms.size() + " available)";
         btnSelectRoom.setText(buttonText);
 
         if (availableRooms.isEmpty()) {
             btnSelectRoom.setEnabled(false);
-            if (tenantType.equals("Family")) {
-                btnSelectRoom.setText("No available rooms for family");
-            } else {
-                btnSelectRoom.setText("No available rooms for students");
-            }
+            btnSelectRoom.setText("No rooms available");
         } else {
             btnSelectRoom.setEnabled(true);
         }
@@ -1004,112 +996,88 @@ public class AddTenantActivity extends AppCompatActivity {
 
     private void showRoomSelectionDialog() {
         if (availableRooms.isEmpty()) {
-            String message;
-            if (tenantType.equals("Family")) {
-                message = "No rooms available for family.\n\n" +
-                        "Possible reasons:\n" +
-                        "• All rooms are occupied\n" +
-                        "• No rooms allow family occupancy";
-            } else {
-                message = "No rooms available for students.\n\n" +
-                        "Possible reasons:\n" +
-                        "• All rooms are occupied by families\n" +
-                        "• Student-allowed rooms are at capacity";
-            }
-
             new AlertDialog.Builder(this)
-                    .setTitle("No Available Rooms")
-                    .setMessage(message)
+                    .setTitle("No Rooms Available")
+                    .setMessage("All rooms are currently occupied or not suitable for " + tenantType.toLowerCase() + " occupancy.")
                     .setPositiveButton("OK", null)
                     .show();
             return;
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Room for " + tenantType);
+        builder.setTitle("Select Room");
 
+        ScrollView scrollView = new ScrollView(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(50, 40, 50, 10);
-
-        // Add information header
-        TextView infoText = new TextView(this);
-        if (tenantType.equals("Family")) {
-            infoText.setText("🏠 Family Rooms\n" +
-                    "✅ Full room exclusive access\n" +
-                    "🚫 Students cannot book once family is assigned\n\n");
-        } else {
-            infoText.setText("🎓 Student Rooms\n" +
-                    "✅ Sharing allowed with other students\n" +
-                    "🚫 Cannot book if family is present\n\n");
-        }
-        infoText.setTextSize(12);
-        infoText.setPadding(10, 10, 10, 20);
-        layout.addView(infoText);
+        layout.setPadding(24, 16, 24, 16);
 
         RadioGroup radioGroup = new RadioGroup(this);
 
         for (int i = 0; i < availableRooms.size(); i++) {
             RoomModel room = availableRooms.get(i);
+
             RadioButton radioButton = new RadioButton(this);
+            radioButton.setId(i);
+            radioButton.setPadding(20, 16, 20, 16);
 
-            String roomText = "🏠 " + room.getName() + " (" + room.getType() + ")";
+            // Create the room display text
+            StringBuilder roomText = new StringBuilder();
+            roomText.append(room.getName()).append(" - ").append(room.getType()).append("\n");
 
-            // Show current occupancy status
+            // Occupancy status
             if (room.getOccupied() == 0) {
-                roomText += "\n   ✨ Empty room - You'll be the first occupant";
+                roomText.append("• Available - Empty room\n");
             } else {
                 if (tenantType.equals("Students")) {
-                    int availableSpots = room.getCapacity() - room.getOccupied();
-                    roomText += "\n   👥 Current students: " + room.getOccupied() + "/" + room.getCapacity();
-                    roomText += "\n   📊 Available spots: " + availableSpots;
+                    int available = room.getCapacity() - room.getOccupied();
+                    roomText.append("• Occupied: ").append(room.getOccupied())
+                            .append("/").append(room.getCapacity()).append(" students\n");
+                    roomText.append("• Available spots: ").append(available).append("\n");
+                } else {
+                    roomText.append("• Available for family occupancy\n");
                 }
             }
 
-            // Show what happens after booking
-            if (tenantType.equals("Family")) {
-                roomText += "\n   🔒 After booking: Room becomes family-exclusive";
-                roomText += "\n   🚫 Students will not see this room";
-            } else {
-                int availableAfter = room.getCapacity() - room.getOccupied() - 1;
-                roomText += "\n   📈 After booking: " + availableAfter + " spots for other students";
-            }
-
-            // Show rent information
+            // Rent information
             if (room.getRent() > 0) {
                 if (tenantType.equals("Family")) {
-                    roomText += "\n   💰 Rent: ₹" + room.getRent() + " (Full room)";
+                    roomText.append("• Monthly rent: ₹").append(room.getRent());
                 } else {
-                    double sharedRent = room.getRent() / (double) room.getCapacity();
-                    roomText += "\n   💰 Rent: ₹" + Math.round(sharedRent) + " (Per person)";
+                    double perPerson = room.getRent() / (double) room.getCapacity();
+                    roomText.append("• Rent per person: ₹").append(Math.round(perPerson));
                 }
             }
 
-            radioButton.setText(roomText);
-            radioButton.setPadding(15, 20, 15, 20);
-            radioButton.setId(i);
+            radioButton.setText(roomText.toString());
+            radioButton.setTextSize(14);
+            radioButton.setTextColor(0xFF1A1A1A);
+            radioButton.setBackgroundColor(0xFFF8F9FA);
+
+            // Set margins
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(0, 0, 0, 12);
+            radioButton.setLayoutParams(params);
 
             if (room.getRoomId().equals(selectedRoomKey)) {
                 radioButton.setChecked(true);
             }
 
             radioGroup.addView(radioButton);
-
-            // Add separator line
-            if (i < availableRooms.size() - 1) {
-                View separator = new View(this);
-                separator.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 2));
-                separator.setBackgroundColor(0xFFE0E0E0);
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) separator.getLayoutParams();
-                params.setMargins(0, 15, 0, 15);
-                radioGroup.addView(separator);
-            }
         }
 
         layout.addView(radioGroup);
-        builder.setView(layout);
+        scrollView.addView(layout);
 
+        // Set proper height constraints
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        int maxHeight = (int) (screenHeight * 0.6);
+        scrollView.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, maxHeight));
+
+        builder.setView(scrollView);
         builder.setPositiveButton("Select", (dialog, which) -> {
             int selectedId = radioGroup.getCheckedRadioButtonId();
 
@@ -1123,7 +1091,6 @@ public class AddTenantActivity extends AppCompatActivity {
                 selectedRoomKey = selectedRoom.getRoomId();
                 selectedRoomName = selectedRoom.getName();
 
-                // Clear and add to selectedRooms for compatibility
                 selectedRooms.clear();
                 selectedRooms.add(selectedRoom);
 
@@ -1133,40 +1100,32 @@ public class AddTenantActivity extends AppCompatActivity {
         });
 
         builder.setNegativeButton("Cancel", null);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.create().show();
     }
 
     private void updateSelectedRoomDisplay(RoomModel selectedRoom) {
-        String displayText;
+        StringBuilder displayText = new StringBuilder();
+
+        displayText.append("Selected: ").append(selectedRoom.getName())
+                .append(" (").append(selectedRoom.getType()).append(")\n");
+
         if (tenantType.equals("Family")) {
-            displayText = "✅ Selected: " + selectedRoom.getName() +
-                    " (" + selectedRoom.getType() + ")\n" +
-                    "🏠 Family room - Will become exclusive\n";
-
+            displayText.append("Family occupancy - exclusive use\n");
             if (selectedRoom.getOccupied() == 0) {
-                displayText += "✨ Empty room - You'll be the first occupant\n";
-            }
-            displayText += "🔒 Room will be fully occupied after booking\n" +
-                    "🚫 Students will not be able to book this room";
-        } else {
-            int availableSpots = selectedRoom.getCapacity() - selectedRoom.getOccupied();
-            displayText = "✅ Selected: " + selectedRoom.getName() +
-                    " (" + selectedRoom.getType() + ")\n" +
-                    "👥 Student sharing room\n";
-
-            if (selectedRoom.getOccupied() == 0) {
-                displayText += "✨ Empty room - You'll be the first student\n";
+                displayText.append("Empty room - ready to occupy");
             } else {
-                displayText += "🤝 " + selectedRoom.getOccupied() + " students already here\n";
+                displayText.append("Currently occupied");
             }
-            displayText += "📊 After booking: " + (availableSpots - 1) + " spots remaining\n" +
-                    "🚫 Families cannot book this room";
+        } else {
+            displayText.append("Student occupancy\n");
+            displayText.append(selectedRoom.getOccupied()).append("/").append(selectedRoom.getCapacity()).append(" occupied, ");
+            int remaining = Math.max(selectedRoom.getCapacity() - selectedRoom.getOccupied() - 1, 0);
+            displayText.append(remaining).append(" spots left");
         }
 
-        tvSelectedRoom.setText(displayText);
+        tvSelectedRoom.setText(displayText.toString());
     }
+
 
     private void autoFillRentAndDeposit(RoomModel selectedRoom) {
         if (selectedRoom.getRent() > 0) {

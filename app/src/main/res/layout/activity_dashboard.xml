@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textSize="10sp"
-                android:textColor="@android:color/holo_blue_bright"
+                android:textColor="@color/black"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>
@@ -77,7 +77,7 @@
                 android:layout_height="wrap_content"
                 android:text="Rooms"
                 android:textSize="10sp"
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/black"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>
@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:text="Tenants"
                 android:textSize="10sp"
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/black"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>
@@ -137,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:text="Settings"
                 android:textSize="10sp"
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/black"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>

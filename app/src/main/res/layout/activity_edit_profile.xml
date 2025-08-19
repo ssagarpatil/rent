@@ -166,8 +166,9 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnUpdateSignature"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="24dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:layout_marginTop="10dp"
                 android:text="Update Signature"
                 android:textColor="@android:color/white"
                 android:backgroundTint="#3F51B5"
@@ -176,7 +177,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveChanges"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:text="Save Changes"
                 android:textSize="16sp"
                 android:textColor="@android:color/white"
