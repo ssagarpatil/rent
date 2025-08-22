@@ -24,18 +24,20 @@ import com.google.firebase.database.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import androidx.core.content.ContextCompat;
+
 import java.util.Map;
 
 public class RoomsFragment extends Fragment {
 
-    private RecyclerView rvRooms;
-    private FloatingActionButton fabAdd;
-    private RoomsAdapter adapter;
-    private List<RoomModel> roomList = new ArrayList<>();
+    RecyclerView rvRooms;
+    FloatingActionButton fabAdd;
+    RoomsAdapter adapter;
+    List<RoomModel> roomList = new ArrayList<>();
 
-    private DatabaseReference roomsRef;
-    private DatabaseReference tenantsRef;
-    private String adminId;
+    DatabaseReference roomsRef;
+    DatabaseReference tenantsRef;
+    String adminId;
 
     public RoomsFragment() {}
 
@@ -44,23 +46,9 @@ public class RoomsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_rooms, container, false);
 
-        initializeViews(view);
-        setupRecyclerView();
-        initializeFirebase();
-        loadRooms();
-        listenToTenantChanges();
-
-        fabAdd.setOnClickListener(v -> showAddEditDialog(null));
-
-        return view;
-    }
-
-    private void initializeViews(View view) {
         rvRooms = view.findViewById(R.id.rvRooms);
         fabAdd = view.findViewById(R.id.fab_add_room);
-    }
 
-    private void setupRecyclerView() {
         rvRooms.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new RoomsAdapter(roomList, new RoomsAdapter.OnRoomActionListener() {
             @Override
@@ -74,9 +62,8 @@ public class RoomsFragment extends Fragment {
             }
         }, requireContext());
         rvRooms.setAdapter(adapter);
-    }
 
-    private void initializeFirebase() {
+        // Get adminId from SharedPreferences
         if (getContext() != null) {
             adminId = getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
                     .getString("mobile", "default_admin");
@@ -84,6 +71,7 @@ public class RoomsFragment extends Fragment {
             adminId = "default_admin";
         }
 
+        // Set Firebase references
         roomsRef = FirebaseDatabase.getInstance()
                 .getReference("users")
                 .child(adminId)
@@ -93,6 +81,13 @@ public class RoomsFragment extends Fragment {
                 .getReference("users")
                 .child(adminId)
                 .child("tenants");
+
+        loadRooms();
+        listenToTenantChanges();
+
+        fabAdd.setOnClickListener(v -> showAddEditDialog(null));
+
+        return view;
     }
 
     private void loadRooms() {
@@ -219,6 +214,7 @@ public class RoomsFragment extends Fragment {
         IntentFilter filter = new IntentFilter("ROOM_OCCUPANCY_UPDATED");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Android 8.0 (API 26) and above
             requireActivity().registerReceiver(roomUpdateReceiver, filter,
                     Context.RECEIVER_NOT_EXPORTED);
         }
@@ -229,7 +225,7 @@ public class RoomsFragment extends Fragment {
         super.onPause();
         try {
             requireActivity().unregisterReceiver(roomUpdateReceiver);
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException e) {
             // Receiver was not registered
         }
     }
@@ -250,16 +246,18 @@ public class RoomsFragment extends Fragment {
                 });
     }
 
-    // FIXED ADD/EDIT DIALOG METHOD - MAIN FIX HERE
+    // FIXED ADD/EDIT DIALOG METHOD
     private void showAddEditDialog(RoomModel editRoom) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_room, null);
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
 
-        // Initialize views
         EditText etName = dialogView.findViewById(R.id.etRoomName);
-        AutoCompleteTextView spinnerType = dialogView.findViewById(R.id.spinnerType); // FIXED: Changed from Spinner to AutoCompleteTextView
+
+        // FIXED: Use AutoCompleteTextView instead of Spinner
+        AutoCompleteTextView spinnerType = dialogView.findViewById(R.id.spinnerType);
+
         CheckBox cbFamily = dialogView.findViewById(R.id.cbFamily);
         CheckBox cbStudents = dialogView.findViewById(R.id.cbStudents);
         EditText etCapacity = dialogView.findViewById(R.id.etCapacity);
@@ -270,21 +268,13 @@ public class RoomsFragment extends Fragment {
         Button btnSave = dialogView.findViewById(R.id.btnSave);
         Button btnCancel = dialogView.findViewById(R.id.btnCancel);
 
-        // Setup dropdown adapter for room types
         String[] types = {"1BHK", "2BHK", "1RK", "1R", "Dormitory"};
         ArrayAdapter<String> spAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_dropdown_item_1line, types);
+                android.R.layout.simple_spinner_item, types);
+        spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(spAdapter);
 
-        // Make dropdown show on click
-        spinnerType.setOnClickListener(v -> spinnerType.showDropDown());
-
-        // Handle selection
-        spinnerType.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedType = parent.getItemAtPosition(position).toString();
-            // Optional: Handle type selection
-        });
-
+        // Store original room name for editing
         String originalRoomName = null;
 
         // Pre-fill data for editing
@@ -292,10 +282,10 @@ public class RoomsFragment extends Fragment {
             originalRoomName = editRoom.getName();
             etName.setText(editRoom.getName());
 
-            // Set selected room type
-            for (int i = 0; i < types.length; i++) {
-                if (types[i].equals(editRoom.getType())) {
-                    spinnerType.setText(types[i], false); // Set text without filtering
+            // FIXED: Set text for AutoCompleteTextView instead of selection
+            for (String type : types) {
+                if (type.equals(editRoom.getType())) {
+                    spinnerType.setText(type, false); // false means don't filter
                     break;
                 }
             }
@@ -323,7 +313,10 @@ public class RoomsFragment extends Fragment {
             btnSave.setText("Saving...");
 
             String name = etName.getText().toString().trim();
-            String type = spinnerType.getText().toString().trim(); // FIXED: Get text from AutoCompleteTextView
+
+            // FIXED: Get text from AutoCompleteTextView
+            String type = spinnerType.getText().toString().trim();
+
             boolean family = cbFamily.isChecked();
             boolean students = cbStudents.isChecked();
             String sCapacity = etCapacity.getText().toString().trim();
@@ -335,22 +328,26 @@ public class RoomsFragment extends Fragment {
             // Validation
             if (TextUtils.isEmpty(name)) {
                 etName.setError("Enter room name");
-                resetSaveButton(btnSave);
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
                 return;
             }
             if (TextUtils.isEmpty(type)) {
-                Toast.makeText(getContext(), "Select room type", Toast.LENGTH_SHORT).show();
-                resetSaveButton(btnSave);
+                spinnerType.setError("Select room type");
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
                 return;
             }
             if (TextUtils.isEmpty(sCapacity)) {
                 etCapacity.setError("Enter capacity");
-                resetSaveButton(btnSave);
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
                 return;
             }
             if (!family && !students) {
                 Toast.makeText(getContext(), "Select at least one occupant type", Toast.LENGTH_SHORT).show();
-                resetSaveButton(btnSave);
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
                 return;
             }
 
@@ -358,13 +355,26 @@ public class RoomsFragment extends Fragment {
             boolean isNameChanged = editRoom == null || !name.equals(finalOriginalRoomName);
 
             if (isNameChanged) {
-                checkRoomNameExists(name, () -> {
-                    // Name is unique, proceed with save
-                    saveRoom(name, type, family, students, sCapacity, sRent, sDeposit,
-                            sMaintenance, notes, editRoom, finalOriginalRoomName, dialog, btnSave);
-                }, () -> {
-                    etName.setError("Room name already exists");
-                    resetSaveButton(btnSave);
+                roomsRef.child(name).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            etName.setError("Room name already exists");
+                            btnSave.setEnabled(true);
+                            btnSave.setText("Save");
+                            return;
+                        }
+                        // Name is unique, proceed with save
+                        saveRoom(name, type, family, students, sCapacity, sRent, sDeposit,
+                                sMaintenance, notes, editRoom, finalOriginalRoomName, dialog, btnSave);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(), "Error checking room name", Toast.LENGTH_SHORT).show();
+                        btnSave.setEnabled(true);
+                        btnSave.setText("Save");
+                    }
                 });
             } else {
                 // Name not changed, proceed with save
@@ -374,29 +384,6 @@ public class RoomsFragment extends Fragment {
         });
 
         dialog.show();
-    }
-
-    private void resetSaveButton(Button btnSave) {
-        btnSave.setEnabled(true);
-        btnSave.setText("Save");
-    }
-
-    private void checkRoomNameExists(String name, Runnable onSuccess, Runnable onExists) {
-        roomsRef.child(name).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    onExists.run();
-                } else {
-                    onSuccess.run();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Error checking room name", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void saveRoom(String name, String type, boolean family, boolean students,
@@ -411,7 +398,8 @@ public class RoomsFragment extends Fragment {
 
             if (capacity <= 0) {
                 Toast.makeText(getContext(), "Capacity must be > 0", Toast.LENGTH_SHORT).show();
-                resetSaveButton(btnSave);
+                btnSave.setEnabled(true);
+                btnSave.setText("Save");
                 return;
             }
 
@@ -420,70 +408,62 @@ public class RoomsFragment extends Fragment {
 
             if (editRoom != null) {
                 // Edit existing room
-                updateExistingRoom(name, type, allowedFor, capacity, rent, deposit, maintenance,
-                        notes, editRoom, originalRoomName, dialog, btnSave);
+                RoomModel updated = new RoomModel(name, name, type, allowedFor,
+                        capacity, editRoom.getOccupied(), rent, deposit,
+                        maintenance, notes, System.currentTimeMillis());
+
+                // If room name changed, we need to delete old entry and create new one
+                if (!name.equals(originalRoomName)) {
+                    // Update all tenants with new room key
+                    updateTenantsRoomKey(originalRoomName, name, () -> {
+                        // Delete old room entry
+                        roomsRef.child(originalRoomName).removeValue();
+                        // Add new room entry
+                        roomsRef.child(name).setValue(updated)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    btnSave.setEnabled(true);
+                                    btnSave.setText("Save");
+                                });
+                    });
+                } else {
+                    // Just update the existing room
+                    roomsRef.child(name).setValue(updated)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                btnSave.setEnabled(true);
+                                btnSave.setText("Save");
+                            });
+                }
             } else {
-                // Add new room
-                addNewRoom(name, type, allowedFor, capacity, rent, deposit, maintenance,
-                        notes, dialog, btnSave);
-            }
-        } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), "Please enter valid numbers", Toast.LENGTH_SHORT).show();
-            resetSaveButton(btnSave);
-        }
-    }
+                // Add new room - use room name as key
+                RoomModel newRoom = new RoomModel(name, name, type, allowedFor,
+                        capacity, 0, rent, deposit, maintenance, notes,
+                        System.currentTimeMillis());
 
-    private void addNewRoom(String name, String type, String allowedFor, int capacity,
-                            int rent, int deposit, int maintenance, String notes,
-                            AlertDialog dialog, Button btnSave) {
-        RoomModel newRoom = new RoomModel(name, name, type, allowedFor,
-                capacity, 0, rent, deposit, maintenance, notes,
-                System.currentTimeMillis());
-
-        roomsRef.child(name).setValue(newRoom)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Room added successfully!", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to add room: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    resetSaveButton(btnSave);
-                });
-    }
-
-    private void updateExistingRoom(String name, String type, String allowedFor, int capacity,
-                                    int rent, int deposit, int maintenance, String notes,
-                                    RoomModel editRoom, String originalRoomName,
-                                    AlertDialog dialog, Button btnSave) {
-        RoomModel updated = new RoomModel(name, name, type, allowedFor,
-                capacity, editRoom.getOccupied(), rent, deposit,
-                maintenance, notes, System.currentTimeMillis());
-
-        if (!name.equals(originalRoomName)) {
-            // Room name changed, update tenants and move room entry
-            updateTenantsRoomKey(originalRoomName, name, () -> {
-                roomsRef.child(originalRoomName).removeValue();
-                roomsRef.child(name).setValue(updated)
+                roomsRef.child(name).setValue(newRoom)
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Room added successfully!", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         })
                         .addOnFailureListener(e -> {
-                            Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            resetSaveButton(btnSave);
+                            Toast.makeText(getContext(), "Failed to add room: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            btnSave.setEnabled(true);
+                            btnSave.setText("Save");
                         });
-            });
-        } else {
-            // Just update the existing room
-            roomsRef.child(name).setValue(updated)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(getContext(), "Room updated successfully!", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        resetSaveButton(btnSave);
-                    });
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+            btnSave.setEnabled(true);
+            btnSave.setText("Save");
         }
     }
 
@@ -496,6 +476,7 @@ public class RoomsFragment extends Fragment {
                 for (DataSnapshot tenantSnapshot : snapshot.getChildren()) {
                     Tenant tenant = tenantSnapshot.getValue(Tenant.class);
                     if (tenant != null && oldRoomKey.equals(tenant.assignedRoomKey)) {
+                        // Update tenant's room key
                         updates.put(tenantSnapshot.getKey() + "/assignedRoomKey", newRoomKey);
                         updates.put(tenantSnapshot.getKey() + "/assignedRoomName", newRoomKey);
                     }

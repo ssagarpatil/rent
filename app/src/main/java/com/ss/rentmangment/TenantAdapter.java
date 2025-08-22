@@ -231,8 +231,6 @@
 //        });
 //    }
 //}
-
-
 package com.ss.rentmangment;
 
 import android.app.AlertDialog;
