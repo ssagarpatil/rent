@@ -1,5 +1,6 @@
 package com.ss.rentmangment;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -84,8 +85,8 @@ public class HomeFragment extends Fragment {
                         }
                     }
                 }
-                tvTotalRooms.setText(String.valueOf(totalRooms));
-                tvOccupiedRooms.setText(String.valueOf(occupiedRooms));
+                animateTextView(tvTotalRooms, totalRooms);
+                animateTextView(tvOccupiedRooms, occupiedRooms);
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
@@ -111,9 +112,9 @@ public class HomeFragment extends Fragment {
                     }
                 }
 
-                tvTotalTenants.setText(String.valueOf(totalTenants));
-                tvStudentsCount.setText(String.valueOf(students));
-                tvFamiliesCount.setText(String.valueOf(families));
+                animateTextView(tvTotalTenants, totalTenants);
+                animateTextView(tvStudentsCount, students);
+                animateTextView(tvFamiliesCount, families);
 
                 paymentsRef.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -131,13 +132,57 @@ public class HomeFragment extends Fragment {
                         }
                         double pending = totalExpected - totalPaid;
                         if (pending < 0) pending = 0;
-                        tvPendingRent.setText("₹" + (int) pending);
+                        animateTextViewCurrency(tvPendingRent, (int) pending);
                     }
                     @Override public void onCancelled(@NonNull DatabaseError error) {}
                 });
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
+    }
+
+    // Animate integer count-up with fade+scale on TextView
+    private void animateTextView(TextView textView, int endValue) {
+        ValueAnimator animator = ValueAnimator.ofInt(0, endValue);
+        animator.setDuration(1000);
+        animator.addUpdateListener(animation -> {
+            int animatedValue = (int) animation.getAnimatedValue();
+            textView.setText(String.valueOf(animatedValue));
+        });
+        animator.start();
+
+        // Fade and scale animation on the TextView
+        textView.setAlpha(0f);
+        textView.setScaleX(0.5f);
+        textView.setScaleY(0.5f);
+        textView.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(600)
+                .start();
+    }
+
+    // Animate currency count-up with fade+scale on TextView
+    private void animateTextViewCurrency(TextView textView, int endValue) {
+        ValueAnimator animator = ValueAnimator.ofInt(0, endValue);
+        animator.setDuration(1000);
+        animator.addUpdateListener(animation -> {
+            int animatedValue = (int) animation.getAnimatedValue();
+            textView.setText("₹" + animatedValue);
+        });
+        animator.start();
+
+        // Fade and scale animation on the TextView
+        textView.setAlpha(0f);
+        textView.setScaleX(0.5f);
+        textView.setScaleY(0.5f);
+        textView.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(600)
+                .start();
     }
 
     private String getCurrentMonthYear() {
