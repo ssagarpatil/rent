@@ -19,8 +19,10 @@ public class Tenant {
     public String idProofNumber;
     public String notes;
     public String joiningDate;
-    public String tenantType; // "Family" or "Students"
 
+    public String tenantType; // "Family" or "Students"
+    public String checkInDate;   // Expected format: "dd/MM/yyyy"
+    public String checkOutDate;  // Expected format: "dd/MM/yyyy" (optional, can be null or empty if still active)
     // Default constructor for Firebase
     public Tenant() {}
 
