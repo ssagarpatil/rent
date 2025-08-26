@@ -2,80 +2,338 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardElevation="3dp"
+    app:strokeWidth="0.5dp"
+    app:strokeColor="#E8EAF0"
+    app:cardBackgroundColor="@android:color/white"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="12dp">
 
+        <!-- Header Section -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
 
-            <TextView
-                android:id="@+id/tvTenantName"
+            <!-- Avatar -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E3F2FD">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:background="#F3F4F6">
+
+                    <TextView
+                        android:id="@+id/tvTenantInitial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TN"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1976D2"
+                        android:gravity="center"
+                        tools:ignore="HardcodedText"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tenant Information -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTenantName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="John Doe"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A1A"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:ignore="HardcodedText"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Room: "
+                        android:textColor="#666666"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/tvRoomNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="101"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:fontFamily="sans-serif"
+                        tools:ignore="HardcodedText"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Status Badge -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tenant Name"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#333333"/>
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#FFEBEE">
 
-            <TextView
-                android:id="@+id/tvRoomNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Room: 101"
-                android:textSize="14sp"
-                android:textColor="#666666"/>
+                <TextView
+                    android:id="@+id/tvPaymentStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PENDING"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:textColor="#D32F2F"
+                    android:letterSpacing="0.05"
+                    tools:ignore="HardcodedText"/>
 
-            <TextView
-                android:id="@+id/tvRentAmount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rent: ₹5000"
-                android:textSize="14sp"
-                android:textColor="#666666"/>
-
-            <TextView
-                android:id="@+id/tvPendingMonths"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pending Months: 2"
-                android:textSize="14sp"
-                android:textColor="#D32F2F"
-                android:textStyle="italic"
-                android:visibility="gone"/>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
+        <!-- Payment Details -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#F0F2F5"
+            app:cardBackgroundColor="#FAFBFC">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Monthly Rent -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Monthly Rent"
+                        android:textSize="13sp"
+                        android:textColor="#424242"
+                        android:fontFamily="sans-serif"/>
+
+                    <TextView
+                        android:id="@+id/tvMonthlyRent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹5,000"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A"
+                        android:fontFamily="sans-serif-medium"
+                        tools:ignore="HardcodedText"/>
+
+                </LinearLayout>
+
+                <!-- Collected Amount -->
+                <LinearLayout
+                    android:id="@+id/layoutCollectedAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="3dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Collected"
+                        android:textSize="13sp"
+                        android:textColor="#388E3C"
+                        android:fontFamily="sans-serif"/>
+
+                    <TextView
+                        android:id="@+id/tvCollectedAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹3,000"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#2E7D32"
+                        android:fontFamily="sans-serif-medium"
+                        tools:ignore="HardcodedText"/>
+
+                </LinearLayout>
+
+                <!-- Remaining Amount -->
+                <LinearLayout
+                    android:id="@+id/layoutRemainingAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Remaining"
+                        android:textSize="13sp"
+                        android:textColor="#E64A19"
+                        android:fontFamily="sans-serif"/>
+
+                    <TextView
+                        android:id="@+id/tvRemainingAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹2,000"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#D32F2F"
+                        android:fontFamily="sans-serif-medium"
+                        tools:ignore="HardcodedText"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Collection Progress -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Payment Progress"
+                    android:textSize="12sp"
+                    android:textColor="#0B0B0B"
+                    android:fontFamily="sans-serif"/>
+
+                <TextView
+                    android:id="@+id/tvCollectionPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="60%"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:fontFamily="sans-serif-medium"
+                    tools:ignore="HardcodedText"/>
+
+            </LinearLayout>
+
+            <!-- Progress Bar -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#E8EAF0">
+
+                <ProgressBar
+                    android:id="@+id/progressCollection"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:max="100"
+                    android:progress="60"
+                    android:progressTint="#1976D2"
+                    android:progressBackgroundTint="#E8EAF0"
+                    android:indeterminate="false"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Action Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCollect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Collect"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="💸 Collect Rent"
             android:textAllCaps="false"
-            app:cornerRadius="8dp"
-            android:visibility="visible"/>
-
-        <TextView
-            android:id="@+id/tvPaidStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PAID"
-            android:textColor="@color/purple_500"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:visibility="gone"/>
+            android:fontFamily="sans-serif-medium"
+            app:cornerRadius="22dp"
+            app:backgroundTint="#1976D2"
+            app:rippleColor="#BBDEFB"
+            android:textColor="@android:color/white"
+            app:elevation="1dp"
+            app:icon="@drawable/ic_payment"
+            app:iconGravity="textStart"
+            app:iconSize="18dp"
+            app:iconTint="@android:color/white"
+            android:letterSpacing="0.02"
+            tools:ignore="HardcodedText"/>
 
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>

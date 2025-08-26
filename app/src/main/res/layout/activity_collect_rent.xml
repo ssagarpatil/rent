@@ -5,50 +5,286 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    tools:context=".CollectRentActivity">
+    android:background="@color/background_light">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:elevation="2dp">
 
+        <!-- Toolbar - Reduced height -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarCollectRent"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:title="Collect Rent"
-            app:titleTextColor="@android:color/white"
-            app:popupTheme="@style/Theme.AppCompat.Light" />
+            android:layout_height="48dp"
+            android:background="@drawable/nav_header_gradient"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:title="Rent Collection"
+            app:titleTextColor="@android:color/white"/>
 
+        <!-- Month Navigation - Reduced padding -->
+        <LinearLayout
+            android:id="@+id/layoutMonthNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@android:color/white"
+            android:padding="8dp"
+            android:elevation="1dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPreviousMonth"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="◀"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                style="@style/Widget.Material3.Button.IconButton.Outlined"
+                app:cornerRadius="20dp"
+                app:strokeColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/tvMonthSelector"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📅 Current Month"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:layout_marginHorizontal="12dp"
+                android:padding="8dp"
+                android:background="@drawable/month_selector_bg"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNextMonth"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="▶"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                style="@style/Widget.Material3.Button.IconButton.Outlined"
+                app:cornerRadius="20dp"
+                app:strokeColor="@color/black"/>
+
+        </LinearLayout>
+
+        <!-- REMOVED: Original Collection Summary Section to save space -->
+
+        <!-- Compact Collection Summary Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginVertical="4dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvExpectedAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹10,000"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/amount_expected"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Expected"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvCollectedAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹6,000"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/amount_collected"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Collected"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvPendingAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹4,000"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/amount_pending"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pending"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Tab Layout - Reduced height -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabTextColor="@android:color/white"
-            app:tabIndicatorColor="@android:color/white"
-            app:tabGravity="fill"
-            app:tabMode="fixed" />
+            android:layout_height="42dp"
+            android:background="@android:color/white"
+            app:tabTextColor="@color/black"
+            app:tabSelectedTextColor="@color/primary_blue"
+            app:tabIndicatorColor="@color/primary_blue"
+            app:tabIndicatorHeight="2dp"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- RecyclerView with Maximized Space -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTenants"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-     />
+        android:padding="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:scrollbars="vertical"/>
 
+    <!-- RESTORED: Original Empty State with tvCollectionSummary (Hidden) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="📅 August 2025"
+            android:textSize="18sp"
+            android:visibility="gone"
+            android:textStyle="bold"
+            android:textColor="#1976D2"
+            android:gravity="center_vertical"
+            android:background="@drawable/edittext_background"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <!-- RESTORED: Collection Summary with Original ID (Hidden) -->
+        <TextView
+            android:id="@+id/tvCollectionSummary"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💰 Expected: ₹10,000 | ✅ Collected: ₹6,000 | ⏳ Pending: ₹4,000"
+            android:textSize="12sp"
+            android:textColor="#424242"
+            android:layout_marginTop="12dp"
+            android:background="#F8F9FA"
+            android:padding="12dp"
+            android:lineSpacingExtra="2dp"/>
+
+    </LinearLayout>
+
+    <!-- Compact Empty State -->
     <TextView
         android:id="@+id/tvEmptyState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No tenants found."
-        android:textSize="18sp"
-        android:textColor="#888888"
         android:layout_gravity="center"
+        android:text="No data available"
+        android:textSize="14sp"
+        android:textColor="#666666"
         android:visibility="gone"/>
+
+    <!-- Enhanced Empty State Layout - Compact -->
+    <LinearLayout
+        android:id="@+id/layoutEmptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📊"
+            android:textSize="36sp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No tenants found"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add tenants to start collecting rent"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"/>
+
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

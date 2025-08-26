@@ -1,57 +1,235 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvDialogTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Collect Rent for Tenant"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#333"
-        android:layout_marginBottom="16dp"/>
-
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etAmount"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Dialog Title -->
+        <TextView
+            android:id="@+id/tvDialogTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Amount Paid"
-            android:inputType="numberDecimal"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:text="Collect Payment"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#1976D2"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"/>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPaymentDate"
+        <!-- Payment Summary Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Payment Date (dd/MM/yyyy)"
-            android:focusable="false"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:backgroundTint="#F8F9FA">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etNotes"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💰 Payment Details"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Monthly Rent -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Monthly Rent:"
+                        android:textSize="14sp"
+                        android:textColor="#666666"/>
+
+                    <TextView
+                        android:id="@+id/tvMonthlyRent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹5,000"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"/>
+
+                </LinearLayout>
+
+                <!-- Payment Details (shown if partial payment exists) -->
+                <LinearLayout
+                    android:id="@+id/layoutPaymentDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Already Paid:"
+                            android:textSize="14sp"
+                            android:textColor="#666666"/>
+
+                        <TextView
+                            android:id="@+id/tvAlreadyPaid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹3,000"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#2E7D32"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Remaining:"
+                            android:textSize="14sp"
+                            android:textColor="#666666"/>
+
+                        <TextView
+                            android:id="@+id/tvRemainingAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹2,000"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#D32F2F"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Amount Input -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Notes (Optional)"
-            android:inputType="text"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:hint="💵 Amount to Collect (₹)">
 
-</LinearLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Payment Date -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:hint="📅 Payment Date">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPaymentDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:clickable="true"
+                android:inputType="none"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Notes -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:hint="📝 Notes (Optional)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:inputType="textMultiLine"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginBottom="24dp"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            android:hint="📝 Notes (Optional)">-->
+
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/tvPendingMonths"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:maxLines="3"-->
+<!--                android:inputType="textMultiLine"/>-->
+
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_marginEnd="12dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💰 Confirm Payment"
+                android:textAllCaps="false"
+                android:backgroundTint="#1976D2"
+                android:textColor="@android:color/white"
+                app:cornerRadius="24dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
