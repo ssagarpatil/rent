@@ -162,8 +162,6 @@
 //    }
 //}
 
-
-
 package com.ss.rentmangment;
 
 import android.os.Bundle;
@@ -185,13 +183,13 @@ import java.util.List;
 public class TenantListFragment extends Fragment {
 
     private static final String ARG_TYPE = "type";
+    private String fragmentType; // "students" or "families"
 
     private RecyclerView recyclerView;
     private TextView tvEmptyMessage;
     private TenantAdapter adapter;
-    private String fragmentType; // "students" or "families"
-    private List<Tenant> tenants = new ArrayList<>();
-    private boolean isViewCreated = false;
+    private List<Tenant> tenantList = new ArrayList<>();
+    private boolean isViewInitialized = false;
 
     public static TenantListFragment newInstance(String type) {
         TenantListFragment fragment = new TenantListFragment();
@@ -207,126 +205,74 @@ public class TenantListFragment extends Fragment {
         if (getArguments() != null) {
             fragmentType = getArguments().getString(ARG_TYPE, "students");
         }
-        Log.d("TenantListFragment", "Fragment created for type: " + fragmentType);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        Log.d("TenantListFragment", "onCreateView called for " + fragmentType);
-
         View view = inflater.inflate(R.layout.fragment_tenant_list, container, false);
-
         recyclerView = view.findViewById(R.id.recyclerViewTenants);
         tvEmptyMessage = view.findViewById(R.id.tvEmptyMessage);
 
         setupRecyclerView();
-        isViewCreated = true;
+        isViewInitialized = true;
 
-        // If we already have data, update immediately
-        if (!tenants.isEmpty()) {
-            Log.d("TenantListFragment", "onCreateView: Found existing data, updating immediately");
-            updateTenants(tenants);
-        } else {
-            updateEmptyState();
-        }
+        // Update with any data that might have been set before the view was created
+        updateView();
 
-        Log.d("TenantListFragment", "onCreateView completed for " + fragmentType);
         return view;
     }
 
     private void setupRecyclerView() {
-        if (recyclerView != null) {
-            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter = new TenantAdapter(getContext(), tenants);
+        boolean isStudentMode = "students".equals(fragmentType);
 
-            // ONLY enable room grouping for students - families remain unchanged
-            if ("students".equals(fragmentType)) {
-                adapter.setStudentMode(true);
-                Log.d("TenantListFragment", "Room grouping ENABLED for students");
-            } else {
-                adapter.setStudentMode(false);
-                Log.d("TenantListFragment", "Room grouping DISABLED for families (unchanged)");
-            }
+        // *** FIX IS HERE ***
+        // Pass the boolean flag 'isStudentMode' as the third argument.
+        adapter = new TenantAdapter(getContext(), tenantList, isStudentMode);
 
-            recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+    }
 
-            Log.d("TenantListFragment", "RecyclerView setup for " + fragmentType +
-                    " with " + tenants.size() + " initial tenants");
+    /**
+     * Public method called by the parent PagerAdapter to update the list of tenants.
+     */
+    public void updateTenants(List<Tenant> newTenants) {
+        this.tenantList.clear();
+        if (newTenants != null) {
+            this.tenantList.addAll(newTenants);
+        }
+
+        // If the view is already created, update it immediately.
+        // Otherwise, the data will be loaded in onCreateView.
+        if (isViewInitialized) {
+            updateView();
         }
     }
 
     /**
-     * Update tenants list from parent
+     * Updates the adapter and the empty state message.
      */
-    public void updateTenants(List<Tenant> newTenants) {
-        Log.d("TenantListFragment", "=== updateTenants called for " + fragmentType + " ===");
-        Log.d("TenantListFragment", "Received " + (newTenants != null ? newTenants.size() : 0) + " tenants");
-
-        this.tenants = newTenants != null ? new ArrayList<>(newTenants) : new ArrayList<>();
-
-        // Only update adapter if view is created
-        if (isViewCreated && adapter != null) {
-            Log.d("TenantListFragment", "Updating adapter for " + fragmentType);
-
-            // Set mode before updating data
-            if ("students".equals(fragmentType)) {
-                adapter.setStudentMode(true); // Room grouping for students
-            } else {
-                adapter.setStudentMode(false); // No grouping for families
-            }
-
-            adapter.updateList(this.tenants);
+    private void updateView() {
+        if (adapter != null) {
+            adapter.setData(tenantList); // Use the adapter's own method to refresh its data
         }
 
-        updateEmptyState();
-        Log.d("TenantListFragment", "=== updateTenants completed for " + fragmentType + " ===");
-    }
-
-    private void updateEmptyState() {
-        if (!isViewCreated) return;
-
-        boolean isEmpty = tenants.isEmpty();
-
-        if (isEmpty) {
-            if (recyclerView != null) recyclerView.setVisibility(View.GONE);
-            if (tvEmptyMessage != null) {
-                tvEmptyMessage.setVisibility(View.VISIBLE);
-                String emptyMessage = fragmentType.equals("families") ?
-                        "No family tenants found.\nAdd tenants with 'Family' type to see them here." :
-                        "No student tenants found.\nAdd tenants with 'Students' type to see them here.";
-                tvEmptyMessage.setText(emptyMessage);
-            }
+        if (tenantList.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            tvEmptyMessage.setVisibility(View.VISIBLE);
+            String message = "students".equals(fragmentType) ? "No student tenants found." : "No family tenants found.";
+            tvEmptyMessage.setText(message);
         } else {
-            if (recyclerView != null) recyclerView.setVisibility(View.VISIBLE);
-            if (tvEmptyMessage != null) tvEmptyMessage.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            tvEmptyMessage.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Force refresh if we have data
-        if (!tenants.isEmpty() && adapter != null) {
-            // Ensure correct mode is set
-            if ("students".equals(fragmentType)) {
-                adapter.setStudentMode(true);
-            } else {
-                adapter.setStudentMode(false);
-            }
-
-            adapter.updateList(tenants);
-        }
-
-        updateEmptyState();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        isViewCreated = false;
-        Log.d("TenantListFragment", "onDestroyView called for " + fragmentType);
+        isViewInitialized = false; // Reset the flag when the view is destroyed
     }
 }

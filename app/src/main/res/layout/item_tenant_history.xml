@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
+    android:layout_margin="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/tenantInfoLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/tvHistoryStatus"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvHistoryTenantName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tenant Name"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#333333" />
+
+            <TextView
+                android:id="@+id/tvHistoryTenantMobile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mobile: 9876543210"
+                android:textColor="#666666"
+                android:layout_marginTop="4dp"/>
+
+            <TextView
+                android:id="@+id/tvHistoryRoom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Room: G-01"
+                android:textColor="#666666"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvHistoryStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="Active"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

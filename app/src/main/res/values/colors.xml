@@ -68,6 +68,7 @@
 
     <!-- System Colors -->
 
-
+    <color name="student_icon_color">#388E3C</color> <!-- A professional shade of green -->
+    <color name="family_icon_color">#1976D2</color>  <!-- A professional shade of blue -->
 
 </resources>

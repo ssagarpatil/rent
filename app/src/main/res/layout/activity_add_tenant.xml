@@ -5,7 +5,18 @@
     android:layout_height="match_parent"
     android:background="#F5F7FA"
     android:orientation="vertical">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar_add_tenant"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@android:color/white"
+            android:background="?attr/colorPrimary" />
+
+    </com.google.android.material.appbar.AppBarLayout>
     <!-- Header Section -->
     <RelativeLayout
         android:layout_width="match_parent"

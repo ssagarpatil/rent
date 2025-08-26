@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class TenantByRoomAdapter extends RecyclerView.Adapter<TenantByRoomAdapter.RoomViewHolder> {
 
-    private Context context;
+    private final Context context;
     private List<String> roomKeys;
     private Map<String, List<Tenant>> roomTenantMap;
     private Map<String, String> roomNameMap;
@@ -40,35 +40,36 @@ public class TenantByRoomAdapter extends RecyclerView.Adapter<TenantByRoomAdapte
         List<Tenant> tenants = roomTenantMap.get(roomKey);
         String roomName = roomNameMap.get(roomKey);
 
+        if (tenants == null || tenants.isEmpty()) {
+            // Hide the item if there are no tenants for this room
+            holder.itemView.setVisibility(View.GONE);
+            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+            return;
+        }
+
+        holder.itemView.setVisibility(View.VISIBLE);
+        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         if (roomName == null) roomName = "Room " + (position + 1);
 
-        // Set room header
         holder.tvRoomName.setText(roomName);
-        holder.tvTenantCount.setText(tenants.size() + " tenant(s)");
+        holder.tvTenantCount.setText(tenants.size() + (tenants.size() == 1 ? " Tenant" : " Tenants"));
 
-        // Setup nested RecyclerView for tenants
-        TenantAdapter tenantAdapter = new TenantAdapter(context, tenants);
+        // *** FIX IS HERE ***
+        // Pass 'false' for the isStudentMode parameter because we don't want nested grouping.
+        TenantAdapter tenantAdapter = new TenantAdapter(context, tenants, false);
+
         holder.recyclerTenants.setLayoutManager(new LinearLayoutManager(context));
         holder.recyclerTenants.setAdapter(tenantAdapter);
         holder.recyclerTenants.setNestedScrollingEnabled(false);
 
-        // Determine tenant type for display
-        String tenantType = "Mixed";
-        if (!tenants.isEmpty()) {
-            Tenant firstTenant = tenants.get(0);
-            // Check if it's a family (has emergency contact or high deposit)
-            boolean isFamily = (firstTenant.emergencyContactName != null &&
-                    !firstTenant.emergencyContactName.isEmpty()) ||
-                    (firstTenant.securityDeposit >= firstTenant.rentAmount * 2);
-
-            if (isFamily && tenants.size() == 1) {
-                tenantType = "🏠 Family Room";
-            } else if (!isFamily) {
-                tenantType = "🎓 Student Room";
-            }
+        // Simplified logic to determine room type
+        String tenantType = tenants.get(0).tenantType;
+        if ("Family".equalsIgnoreCase(tenantType)) {
+            holder.tvRoomType.setText("🏠 Family Room");
+        } else {
+            holder.tvRoomType.setText("🎓 Student Room");
         }
-
-        holder.tvRoomType.setText(tenantType);
     }
 
     @Override
@@ -97,5 +98,3 @@ public class TenantByRoomAdapter extends RecyclerView.Adapter<TenantByRoomAdapte
         }
     }
 }
-
-

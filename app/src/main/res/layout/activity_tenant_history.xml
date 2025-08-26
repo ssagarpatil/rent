@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_tenant_history"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="Tenant History &amp; Archive"
+        app:titleTextColor="@android:color/white"
+        android:background="?attr/colorPrimary" />
+
+    <!-- Search View for filtering tenants -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchViewHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:queryHint="Search by name, mobile, or room..."
+        app:iconifiedByDefault="false"
+        android:background="@drawable/search_view_background" />
+
+    <!-- Tabs for separating Active and Left tenants -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabGravity="fill"
+        app:tabMode="fixed" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewTenantHistory"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+</LinearLayout>

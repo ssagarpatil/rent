@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="16dp"
+    android:layout_margin="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvDetailName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tenant Name"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnCloseDialog"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_close"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android.content.Context ="Close"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:tint="@android:color/white"/>
+
+        </RelativeLayout>
+
+        <!-- Details Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="Mobile" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailMobile" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="9876543210"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="Room" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailRoom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G-01"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="Status" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Active" android:textStyle="bold"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="16dp"/>
+
+            <!-- THIS IS THE FIX -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <!-- The TextView for the label now has the correct ID -->
+                <TextView
+                    android:id="@+id/tvDetailLeaseLabel"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:text="Lease Period"
+                    android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailLease" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="01/01/2024 - 31/12/2024"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="Monthly Rent" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailRent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹5000.00"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="Deposit Paid" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDetailDeposit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹10000.00"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

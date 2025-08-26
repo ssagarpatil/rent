@@ -63,7 +63,7 @@ public class TenantPagerAdapter extends FragmentStateAdapter {
     /**
      * Update data in fragments and cache it
      */
-    public void updateData(List<Tenant> allTenants) {
+    public void updateData(List<Tenant> allTenants, List<Tenant> familyTenants) {
         if (allTenants == null) {
             allTenants = new ArrayList<>();
         }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_edit"
+        android:title="Edit Tenant Details"
+        android:icon="@drawable/ic_edit" /> <!-- Replace with your own icon -->
+    <item
+        android:id="@+id/menu_mark_left"
+        android:title="Mark as Left / Vacated"
+        android:icon="@drawable/ic_archive_" /> <!-- Replace with your own icon -->
+    <item
+        android:id="@+id/menu_delete"
+        android:title="Delete Permanently"
+        android:icon="@drawable/ic_delete" /> <!-- Replace with your own icon -->
+</menu>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F7FA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar_expenses"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Expense Management"
+            app:titleTextColor="@android:color/white"
+            android:background="?attr/colorPrimary" />
+
+        <!-- SearchView for filtering -->
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchViewExpenses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:queryHint="Search by description, category, or room..."
+            app:iconifiedByDefault="false"
+            android:background="@drawable/search_view_background" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewExpenses"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    </LinearLayout>
+
+    <!-- This is the Floating Action Button for adding a new expense -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddExpense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        app:tint="@android:color/white"
+        android:contentDescription="Add New Expense" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

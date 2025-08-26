@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +42,8 @@ public class SettingsFragment extends Fragment {
     private DatabaseReference usersRef;
     private SharedPreferences sharedPreferences;
     private String userMobile, userName;
+    private LinearLayout layoutTenantHistory;
+    private LinearLayout layoutExpenseManagement, layoutFinancialReports;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -73,7 +76,7 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
-    private void initializeViews(View view) {
+    private void initializeViews(View view)     {
         tvWelcome = view.findViewById(R.id.tvWelcome);
         tvMobileDisplay = view.findViewById(R.id.tvMobileDisplay);
         tvBusinessName = view.findViewById(R.id.tvBusinessName);
@@ -84,6 +87,10 @@ public class SettingsFragment extends Fragment {
         ivMenuDots = view.findViewById(R.id.ivMenuDots);
         drawerLayout = view.findViewById(R.id.drawerLayout);
         navigationView = view.findViewById(R.id.navigationView);
+
+        layoutTenantHistory = view.findViewById(R.id.layoutTenantHistory);
+        layoutExpenseManagement = view.findViewById(R.id.layoutExpenseManagement);
+        layoutFinancialReports = view.findViewById(R.id.layoutFinancialReports);
     }
 
     private void getUserData() {
@@ -197,12 +204,27 @@ public class SettingsFragment extends Fragment {
                 drawerLayout.openDrawer(GravityCompat.END);
             }
         });
+        layoutExpenseManagement.setOnClickListener(v -> {
+            // This will open the Expense List screen we will build next.
+            // For now, it opens the "Add Expense" screen directly.
+            Intent intent = new Intent(getContext(), ExpensesActivity.class);
+            startActivity(intent);
+        });
+
+        layoutFinancialReports.setOnClickListener(v -> {
+            startActivity(new Intent(getContext(), ReportsActivity.class));
+        });
 
         // Optional: Click listener to view signature in full screen
         ivUserSignature.setOnClickListener(v -> {
             if (getContext() != null) {
                 Toast.makeText(getContext(), "Signature view clicked", Toast.LENGTH_SHORT).show();
             }
+        });
+
+        layoutTenantHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), TenantHistoryActivity.class);
+            startActivity(intent);
         });
     }
 

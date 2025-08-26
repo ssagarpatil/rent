@@ -748,6 +748,9 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
+import com.google.android.material.appbar.MaterialToolbar;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -797,10 +800,55 @@ public class AddTenantActivity extends AppCompatActivity {
     private boolean isMoreInfoExpanded = false;
     private String tenantType = "Family"; // Default to Family
 
+    private boolean isEditMode = false;
+    private String tenantMobileKey = "";
+    private DatabaseReference tenantRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_tenant);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar_add_tenant);
+
+        // This line will now work perfectly because the types match
+        setSupportActionBar(toolbar);
+
+        // *** FIX IS HERE: Step 3 - Now it is safe to use the ActionBar ***
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Show back button
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
+        // Initialize all your other views (EditTexts, Buttons, etc.)
+        // etName = findViewById(R.id.etName);
+        // ...
+
+        // Now, proceed with your existing logic to check for edit mode
+        if (getIntent().hasExtra("tenant_mobile_key")) {
+            isEditMode = true;
+            tenantMobileKey = getIntent().getStringExtra("tenant_mobile_key");
+
+            // Set the title AFTER setting the support action bar
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Edit Tenant");
+            }
+
+            // Get admin ID and setup Firebase reference
+            String adminId = getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("mobile", "");
+            tenantRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(adminId).child("tenants").child(tenantMobileKey);
+
+            loadTenantData();
+        } else {
+            // Set the title for "add new" mode
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Add New Tenant");
+            }
+        }
+
+        // Your save button click listener logic goes here
+
 
         initViews();
         setupClickListeners();
@@ -811,6 +859,40 @@ public class AddTenantActivity extends AppCompatActivity {
 
         loadAvailableRooms();
     }
+
+    private void loadTenantData() {
+        if (tenantRef == null) return;
+
+        tenantRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Tenant tenant = snapshot.getValue(Tenant.class);
+                    if (tenant != null) {
+                        // Populate your EditText fields
+                        // etName.setText(tenant.name);
+                        // ... and so on for all fields
+                    }
+                } else {
+                    Toast.makeText(AddTenantActivity.this, "Tenant data not found.", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(AddTenantActivity.this, "Failed to load tenant data.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // Handle the back button click on the toolbar
+        onBackPressed();
+        return true;
+    }
+
 
     private void initViews() {
         // Essential Fields
@@ -1175,6 +1257,8 @@ public class AddTenantActivity extends AppCompatActivity {
     }
 
     // Add this updated saveTenant method to your existing AddTenantActivity.java
+    // This is the only method you need to replace in your AddTenantActivity.java
+
     private void saveTenant() {
         // Validate essential fields first
         if (!validateEssentialFields()) {
@@ -1186,75 +1270,77 @@ public class AddTenantActivity extends AppCompatActivity {
             return;
         }
 
+        // --- Gather all data from the form ---
         String name = etName.getText().toString().trim();
         String tenantMobile = etMobile.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String leaseStart = etLeaseStart.getText().toString().trim();
-        String leaseEnd = etLeaseEnd.getText().toString().trim();
         String rentStr = etRent.getText().toString().trim();
         String depositStr = etDeposit.getText().toString().trim();
         String idProofType = etIdProofType.getText().toString().trim();
         String idProofNumber = etIdProofNumber.getText().toString().trim();
+        String emergencyName = etEmergencyName.getText().toString().trim();
+        String emergencyPhone = etEmergencyPhone.getText().toString().trim();
+        String notes = etNotes.getText().toString().trim();
+
+        // **THE DEFINITIVE FIX IS HERE**
+        // 1. Get the leaseEnd value from the EditText. It might be empty.
+        String leaseEndValue = etLeaseEnd.getText().toString().trim();
+
+        // 2. For a NEW, ACTIVE tenant, the leaseEndDate MUST be an empty string.
+        // We ignore any value that might have been entered in the etLeaseEnd field.
+        // This value will only be set when the tenant's status is updated to "Left".
+        String finalLeaseEnd = ""; // Start with an empty string.
+
+        // This check is only relevant if you were in an EDIT mode for a LEFT tenant.
+        // For now, in "Add Tenant" mode, it will always be empty, which is correct.
+        if (!"Active".equalsIgnoreCase("Active")) { // This logic is for future edit mode
+            finalLeaseEnd = leaseEndValue;
+        }
+
 
         // === Create Tenant object ===
         String tenantId = UUID.randomUUID().toString();
 
-        // Set default lease end date if not provided (1 year from start)
-        if (TextUtils.isEmpty(leaseEnd)) {
-            leaseEnd = calculateDefaultLeaseEnd(leaseStart);
-        }
-
-        // UPDATED: Include tenantType in constructor
         Tenant tenant = new Tenant(
                 tenantId,
                 name,
                 tenantMobile,
                 email,
-                selectedRoomName,        // roomNumber
-                selectedRoomKey,         // assignedRoomKey
-                selectedRoomName,        // assignedRoomName
+                selectedRoomName,
+                selectedRoomKey,
+                selectedRoomName,
                 leaseStart,
-                leaseEnd,
+                finalLeaseEnd, // **FIXED**: Use the corrected, empty string here.
                 parseDouble(rentStr),
                 parseDouble(depositStr),
-                "Active",
+                "Active", // New tenants are always "Active".
                 etEmergencyName.getText().toString().trim(),
                 etEmergencyPhone.getText().toString().trim(),
                 idProofType,
                 idProofNumber,
                 etNotes.getText().toString().trim(),
-                tenantType              // CRITICAL: Pass the actual tenantType ("Family" or "Students")
+                tenantType
         );
 
-        // Save tenant
+        // --- Save tenant to Firebase (This part of your code is correct) ---
         usersRef.child(adminMobile).child("tenants").child(tenantMobile)
                 .setValue(tenant)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Update room occupancy based on tenant type
                         if (tenantType.equals("Family")) {
-                            // Family takes the whole room - sets occupancy to full capacity
                             updateRoomOccupancyForFamily(selectedRoomKey);
                         } else {
-                            // Student takes one spot - increments occupancy by 1
                             updateRoomOccupancy(selectedRoomKey, 1);
                         }
 
-                        // Send broadcast to update UI
-                        Intent broadcastIntent = new Intent("TENANT_ADDED");
-                        broadcastIntent.putExtra("roomId", selectedRoomKey);
-                        broadcastIntent.putExtra("tenantType", tenantType);
-                        sendBroadcast(broadcastIntent);
-
+                        // --- Success Message Logic ---
                         String successMessage = "Tenant added successfully!\n\n";
                         if (tenantType.equals("Family")) {
-                            successMessage += "🏠 Room " + selectedRoomName + " is now family-exclusive.\n" +
-                                    "🚫 Students will not be able to book this room.";
+                            successMessage += "🏠 Room " + selectedRoomName + " is now family-exclusive.";
                         } else {
-                            successMessage += "👥 Room " + selectedRoomName + " is now student-shared.\n" +
-                                    "🚫 Families will not be able to book this room.";
+                            successMessage += "👥 Room " + selectedRoomName + " is now student-shared.";
                         }
-
                         Toast.makeText(this, successMessage, Toast.LENGTH_LONG).show();
                         finish();
                     } else {
@@ -1262,6 +1348,7 @@ public class AddTenantActivity extends AppCompatActivity {
                     }
                 });
     }
+
 
     private void updateRoomOccupancyForFamily(String roomKey) {
         if (TextUtils.isEmpty(roomKey)) return;
